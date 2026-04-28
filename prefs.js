@@ -30,20 +30,16 @@ function get_token() {
 function _fetchJson(session, url) {
     return new Promise((resolve, reject) => {
         let msg = Soup.Message.new('GET', url);
-
         msg.request_headers.append('Client-ID', client_id);
         let token = get_token();
         if (token) msg.request_headers.append('Authorization', 'Bearer ' + token);
-
         session.send_and_read_async(msg, GLib.PRIORITY_DEFAULT, null, (s, r) => {
             try {
                 let bytes = s.send_and_read_finish(r);
                 let data = JSON.parse(new TextDecoder().decode(bytes.get_data()));
                 if (data.error) reject(data.error);
                 else resolve(data.data);
-            } catch (e) {
-                reject(e);
-            }
+            } catch (e) { reject(e); }
         });
     });
 }
@@ -51,36 +47,23 @@ function _fetchJson(session, url) {
 function _users(session, logins) {
     return _fetchJson(session, `https://api.twitch.tv/helix/users?login=${logins.join('&login=')}`);
 }
-
 function _usersID(session, ids) {
     return _fetchJson(session, `https://api.twitch.tv/helix/users?id=${ids.join('&id=')}`);
 }
-
 function _follows(session, userId) {
-    return _fetchJson(
-        session,
-        `https://api.twitch.tv/helix/channels/followed?user_id=${userId}&first=100`
-    );
+    return _fetchJson(session, `https://api.twitch.tv/helix/channels/followed?user_id=${userId}&first=100`);
 }
 
 // ---------------- KICK ----------------
 function _fetchKickProfilePicUrl(session, username) {
     return new Promise((resolve) => {
-        let msg = Soup.Message.new(
-            'GET',
-            `https://kick.com/api/v2/channels/${encodeURIComponent(username)}`
-        );
-
+        let msg = Soup.Message.new('GET', `https://kick.com/api/v2/channels/${encodeURIComponent(username)}`);
         msg.request_headers.append('User-Agent', 'Parasocial/1.0');
-
         session.send_and_read_async(msg, GLib.PRIORITY_DEFAULT, null, (s, r) => {
             try {
-                let bytes = s.send_and_read_finish(r);
-                let data = JSON.parse(new TextDecoder().decode(bytes.get_data()));
+                let data = JSON.parse(new TextDecoder().decode(s.send_and_read_finish(r).get_data()));
                 resolve(data?.user?.profile_pic || null);
-            } catch {
-                resolve(null);
-            }
+            } catch { resolve(null); }
         });
     });
 }
@@ -90,12 +73,7 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         window.set_search_enabled(true);
 
-        // Help the preferences process find the extension's compiled schemas
-        GLib.setenv(
-            'GSETTINGS_SCHEMA_DIR',
-            this.dir.get_child('schemas').get_path(),
-            true
-        );
+        GLib.setenv('GSETTINGS_SCHEMA_DIR', this.dir.get_child('schemas').get_path(), true);
 
         const builder = new Gtk.Builder();
         builder.add_from_file(this.dir.get_path() + '/prefs.xml');
@@ -106,10 +84,33 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
 
         const settings = this.getSettings();
 
-        // ────────────────────────────────────────────────────────────────
-        // 1.  FULL SET OF BINDINGS – makes Panel & Commands tabs work
-        // ────────────────────────────────────────────────────────────────
+        // ── 1. FILL COMBOBOX STORES (fixes the empty Appearance settings) ──
+        const topbarStore = builder.get_object('TopBarDisplay_ListStore');
+        [
+            ['empty', _('Only indicator')],
+            ['text-only', _('Streamers names')],
+            ['count-only', _('Number of live streams')],
+            ['icon-only', _('Streamers icons')],
+            ['all-icons', _('Streamers icons (all)')]
+        ].forEach(([id, label]) => {
+            let iter = topbarStore.append();
+            topbarStore.set(iter, [0, 1], [id, label]);
+        });
+
+        const sortStore = builder.get_object('StreamSort_ListStore');
+        [
+            ['NAME', _('Streamer name')],
+            ['GAME', _('Game title')],
+            ['COUNT', _('Viewers count')],
+            ['UPTIME', _('Stream uptime')]
+        ].forEach(([id, label]) => {
+            let iter = sortStore.append();
+            sortStore.set(iter, [0, 1], [id, label]);
+        });
+
+        // ── 2. SETTINGS BINDINGS ──
         settings.bind('interval', builder.get_object('field_interval'), 'value', Gio.SettingsBindFlags.DEFAULT);
+        settings.bind('title-length', builder.get_object('field_title_length'), 'value', Gio.SettingsBindFlags.DEFAULT);
         settings.bind('opencmd', builder.get_object('field_opencmd'), 'text', Gio.SettingsBindFlags.DEFAULT);
         settings.bind('kick-opencmd', builder.get_object('field_kickopencmd'), 'text', Gio.SettingsBindFlags.DEFAULT);
         settings.bind('hideplaylists', builder.get_object('field_hideplaylists'), 'active', Gio.SettingsBindFlags.DEFAULT);
@@ -121,8 +122,7 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
         settings.bind('showuptime', builder.get_object('field_showuptime'), 'active', Gio.SettingsBindFlags.DEFAULT);
         settings.bind('topbarmode', builder.get_object('field_topbarmode'), 'active-id', Gio.SettingsBindFlags.DEFAULT);
         settings.bind('sortkey', builder.get_object('field_sortkey'), 'active-id', Gio.SettingsBindFlags.DEFAULT);
-        settings.bind('title-length', builder.get_object('field_title_length'), 'value', Gio.SettingsBindFlags.DEFAULT);
-        // Notification sub‑options sensitivity
+
         const updateNotifSensitivity = () => {
             let enabled = settings.get_boolean('notifications-enabled');
             builder.get_object('field_notifications-game-change').sensitive = enabled;
@@ -131,21 +131,14 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
         updateNotifSensitivity();
         builder.get_object('field_notifications-enabled').connect('notify::active', updateNotifSensitivity);
 
-        // ────────────────────────────────────────────────────────────────
-        // 2.  YOUR WORKING STREAMER LIST CODE – untouched
-        // ────────────────────────────────────────────────────────────────
+        // ── 3. STREAMER LIST (your working code) ──
         const store = new Gtk.ListStore();
-        store.set_column_types([
-            GObject.TYPE_STRING,
-            GObject.TYPE_STRING
-        ]);
-
+        store.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING]);
         const view = builder.get_object('field_streamerslist');
         view.set_model(store);
 
         const session = Soup.Session.new();
         Icons.init_icons();
-
         const streamers = new Set();
 
         function refreshView() {
@@ -155,41 +148,23 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
 
         function appendStreamer(name) {
             if (streamers.has(name)) return;
-
             streamers.add(name);
-
             let iter = store.append();
-            store.set(iter, [
-                0, 1
-            ], [
-                name,
-                Icons.get_icon_name(name)
-            ]);
-
+            store.set(iter, [0, 1], [name, Icons.get_icon_name(name)]);
             refreshView();
         }
 
         function saveStreamers() {
             let list = [];
-
-            store.foreach((model, path, iter) => {
-                list.push(model.get_value(iter, 0));
-            });
-
+            store.foreach((model, path, iter) => list.push(model.get_value(iter, 0)));
             settings.set_string('streamers', list.join(','));
         }
 
         function loadStreamers() {
             streamers.clear();
             store.clear();
-
-            let raw = settings.get_string('streamers')
-                .split(',')
-                .map(s => s.trim())
-                .filter(Boolean);
-
+            let raw = settings.get_string('streamers').split(',').map(s => s.trim()).filter(Boolean);
             raw.forEach(appendStreamer);
-
             refreshIcons();
         }
 
@@ -202,34 +177,24 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
                     let name = full.replace(/^twitch:/, '');
                     try {
                         let data = await _users(session, [name]);
-                        if (data?.[0]?.profile_image_url) {
+                        if (data?.[0]?.profile_image_url)
                             await Icons.trigger_download_by_url(full, data[0].profile_image_url);
-                        }
                     } catch {}
                 }
             };
-
             (one ? [one] : [...streamers]).forEach(s => run(s));
         }
 
-        // Column setup
-        const col = new Gtk.TreeViewColumn({
-            title: _('Streamer name'),
-            expand: true
-        });
-
+        const col = new Gtk.TreeViewColumn({ title: _('Streamer name'), expand: true });
         const iconRenderer = new Gtk.CellRendererPixbuf();
         col.pack_start(iconRenderer, false);
         col.add_attribute(iconRenderer, 'icon-name', 1);
-
         const textRenderer = new Gtk.CellRendererText({ editable: true });
         col.pack_start(textRenderer, true);
         col.add_attribute(textRenderer, 'text', 0);
-
         textRenderer.connect('edited', (r, path, newText) => {
             let [ok, iter] = store.get_iter_from_string(path);
             if (!ok) return;
-
             newText = newText.trim();
             if (!newText) {
                 store.remove(iter);
@@ -237,17 +202,13 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
                 refreshView();
                 return;
             }
-
             store.set(iter, [0, 1], [newText, Icons.get_icon_name(newText)]);
             saveStreamers();
             refreshView();
         });
-
         view.append_column(col);
 
-        // ────────────────────────────────────────────────────────────────
-        // 3.  DIALOGS – your proven pattern
-        // ────────────────────────────────────────────────────────────────
+        // ── 4. DIALOGS (your proven pattern) ──
         function createDialog(title, body, placeholder) {
             const entry = new Gtk.Entry({ placeholder_text: placeholder, activates_default: true });
             const dialog = new Adw.MessageDialog({
@@ -264,13 +225,8 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
             return { dialog, entry };
         }
 
-        // Add Twitch
         builder.get_object('add_twitch_streamer').connect('clicked', () => {
-            const { dialog, entry } = createDialog(
-                _('Add Twitch Streamer'),
-                _('Enter Twitch username'),
-                'username'
-            );
+            const { dialog, entry } = createDialog(_('Add Twitch Streamer'), _('Enter Twitch username'), 'username');
             dialog.connect('response', (dlg, resp) => {
                 if (resp === 'ok') {
                     const name = entry.get_text().trim();
@@ -285,13 +241,8 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
             dialog.present();
         });
 
-        // Add Kick
         builder.get_object('add_kick_streamer').connect('clicked', () => {
-            const { dialog, entry } = createDialog(
-                _('Add Kick Streamer'),
-                _('Enter Kick username'),
-                'username'
-            );
+            const { dialog, entry } = createDialog(_('Add Kick Streamer'), _('Enter Kick username'), 'username');
             dialog.connect('response', (dlg, resp) => {
                 if (resp === 'ok') {
                     const name = entry.get_text().trim();
@@ -306,7 +257,6 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
             dialog.present();
         });
 
-        // Remove selected
         builder.get_object('del_streamer').connect('clicked', () => {
             let [ok, model, iter] = view.get_selection().get_selected();
             if (ok) {
@@ -325,67 +275,43 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
             refreshView();
         });
 
-        // Import Twitch Follows
         let importing = false;
         const importBtn = builder.get_object('import_from_twitch');
-
         importBtn.connect('clicked', () => {
             if (importing) return;
-
-            const { dialog, entry } = createDialog(
-                _('Import Twitch Follows'),
-                _('Enter Twitch username'),
-                'username'
-            );
-
+            const { dialog, entry } = createDialog(_('Import Twitch Follows'), _('Enter Twitch username'), 'username');
             dialog.connect('response', async (dlg, resp) => {
-                if (resp !== 'ok') return dlg.destroy();
-
+                if (resp !== 'ok') { dlg.destroy(); return; }
                 const username = entry.get_text().trim();
                 dlg.destroy();
                 if (!username) return;
-
                 importing = true;
                 importBtn.label = _('Importing...');
-
                 try {
                     let user = await _users(session, [username]);
                     let follows = await _follows(session, user[0].id);
                     let ids = follows.map(f => f.broadcaster_id);
                     let users = await _usersID(session, ids);
-
-                    users.forEach(u =>
-                        appendStreamer('twitch:' + u.login)
-                    );
-
+                    users.forEach(u => appendStreamer('twitch:' + u.login));
                     saveStreamers();
                     refreshIcons();
                 } catch (e) {
                     console.error('[Parasocial import]', e);
                 }
-
                 importing = false;
                 importBtn.label = _('Import from Twitch');
             });
-
             dialog.present();
         });
 
-        // Authenticate
         builder.get_object('authenticate_oauth').connect('clicked', () => {
-            try {
-                Api.trigger_oauth(this.dir.get_path());
-            } catch (e) {
-                console.error(e);
-            }
+            Api.trigger_oauth(this.dir.get_path());
         });
 
-        // Refresh profile images
         builder.get_object('refresh_icons').connect('clicked', () => {
             Icons.refresh_all_icons(session, [...streamers], _users, _fetchKickProfilePicUrl);
         });
 
-        // Initial load
         loadStreamers();
     }
 }
