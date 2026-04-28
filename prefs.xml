@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<interface domain="twitchlive">
+<interface domain="parasocial">
   <requires lib="gtk" version="4.0"/>
+  <requires lib="adwaita" version="1.0"/>
+
+  <!-- ================ Objects ================ -->
 
   <object class="GtkAdjustment" id="Adjust_Interval">
     <property name="lower">1</property>
@@ -22,264 +25,154 @@
     </columns>
   </object>
 
-  <!-- Twitch import dialog (for bulk-import) -->
-  <object class="GtkDialog" id="UserPromptDialog">
-    <property name="modal">1</property>
-    <property name="use-header-bar">1</property>
-    <child type="titlebar">
-      <object class="GtkHeaderBar">
-        <property name="can_focus">0</property>
-        <property name="title-widget" translatable="yes">
-          <object class="GtkLabel">
-            <property name="label" translatable="yes">Import from twitch</property>
-            <property name="hexpand">1</property>
-            <property name="halign">1</property>
-          </object>
-        </property>
-        <property name="hexpand">1</property>
+  <!-- ================ Dialogs ================ -->
+
+  <!-- Twitch import -->
+  <object class="AdwMessageDialog" id="UserPromptDialog">
+    <property name="heading" translatable="yes">Import from Twitch</property>
+    <property name="body" translatable="yes">Enter your Twitch account username to import your follows.</property>
+    <property name="extra-child">
+      <object class="GtkEntry" id="UserPromptDialog-entry">
+        <property name="activates-default">True</property>
       </object>
-    </child>
-    <child internal-child="content_area">
-      <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="margin-start">10</property>
-        <property name="margin-end">10</property>
-        <property name="margin-top">10</property>
-        <property name="margin-bottom">10</property>
-        <property name="spacing">5</property>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="label" translatable="yes">Twitch account to import follows from :</property>
-            <property name="hexpand">1</property>
-            <property name="halign">1</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkEntry" id="UserPromptDialog-entry">
-            <property name="visible">True</property>
-          </object>
-        </child>
-      </object>
-    </child>
-    <child type="action">
-      <object class="GtkButton" id="UserPromptDialog-cancel">
-        <property name="visible">True</property>
-        <property name="label" translatable="yes">Cancel</property>
-      </object>
-    </child>
-    <child type="action">
-      <object class="GtkButton" id="UserPromptDialog-ok">
-        <property name="visible">True</property>
-        <property name="label" translatable="yes">Import</property>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="cancel">UserPromptDialog-cancel</action-widget>
-      <action-widget response="ok" default="true">UserPromptDialog-ok</action-widget>
-    </action-widgets>
+    </property>
+    <responses>
+      <response id="cancel" translatable="yes">Cancel</response>
+      <response id="ok" translatable="yes" appearance="suggested">Import</response>
+    </responses>
+    <property name="default-response">ok</property>
+    <property name="close-response">cancel</property>
   </object>
 
-  <!-- Kick single-add dialog -->
-  <object class="GtkDialog" id="KickStreamerDialog">
-    <property name="modal">1</property>
-    <property name="use-header-bar">1</property>
-    <child type="titlebar">
-      <object class="GtkHeaderBar">
-        <property name="can_focus">0</property>
-        <property name="title-widget" translatable="yes">
-          <object class="GtkLabel">
-            <property name="label" translatable="yes">Add Kick streamer</property>
-            <property name="hexpand">1</property>
-            <property name="halign">1</property>
-          </object>
-        </property>
-        <property name="hexpand">1</property>
+  <!-- Add Twitch streamer -->
+  <object class="AdwMessageDialog" id="TwitchStreamerDialog">
+    <property name="heading" translatable="yes">Add Twitch Streamer</property>
+    <property name="body" translatable="yes">Enter the exact Twitch username.</property>
+    <property name="extra-child">
+      <object class="GtkEntry" id="TwitchStreamerDialog-entry">
+        <property name="activates-default">True</property>
       </object>
-    </child>
-    <child internal-child="content_area">
-      <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="margin-start">10</property>
-        <property name="margin-end">10</property>
-        <property name="margin-top">10</property>
-        <property name="margin-bottom">10</property>
-        <property name="spacing">5</property>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="label" translatable="yes">Kick username:</property>
-            <property name="hexpand">1</property>
-            <property name="halign">1</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkEntry" id="KickStreamerDialog-entry">
-            <property name="visible">True</property>
-            <property name="activates-default">True</property>
-          </object>
-        </child>
-      </object>
-    </child>
-    <child type="action">
-      <object class="GtkButton" id="KickStreamerDialog-cancel">
-        <property name="visible">True</property>
-        <property name="label" translatable="yes">Cancel</property>
-      </object>
-    </child>
-    <child type="action">
-      <object class="GtkButton" id="KickStreamerDialog-ok">
-        <property name="visible">True</property>
-        <property name="label" translatable="yes">Add</property>
-        <property name="has-default">True</property>
-        <style>
-          <class name="suggested-action"/>
-        </style>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="cancel">KickStreamerDialog-cancel</action-widget>
-      <action-widget response="ok" default="true">KickStreamerDialog-ok</action-widget>
-    </action-widgets>
+    </property>
+    <responses>
+      <response id="cancel" translatable="yes">Cancel</response>
+      <response id="ok" translatable="yes" appearance="suggested">Add</response>
+    </responses>
+    <property name="default-response">ok</property>
+    <property name="close-response">cancel</property>
   </object>
 
-  <!-- Twitch single-add dialog -->
-  <object class="GtkDialog" id="TwitchStreamerDialog">
-    <property name="modal">1</property>
-    <property name="use-header-bar">1</property>
-    <child type="titlebar">
-      <object class="GtkHeaderBar">
-        <property name="can_focus">0</property>
-        <property name="title-widget" translatable="yes">
-          <object class="GtkLabel">
-            <property name="label" translatable="yes">Add Twitch streamer</property>
-            <property name="hexpand">1</property>
-            <property name="halign">1</property>
-          </object>
-        </property>
-        <property name="hexpand">1</property>
+  <!-- Add Kick streamer -->
+  <object class="AdwMessageDialog" id="KickStreamerDialog">
+    <property name="heading" translatable="yes">Add Kick Streamer</property>
+    <property name="body" translatable="yes">Enter the exact Kick username.</property>
+    <property name="extra-child">
+      <object class="GtkEntry" id="KickStreamerDialog-entry">
+        <property name="activates-default">True</property>
       </object>
-    </child>
-    <child internal-child="content_area">
-      <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="margin-start">10</property>
-        <property name="margin-end">10</property>
-        <property name="margin-top">10</property>
-        <property name="margin-bottom">10</property>
-        <property name="spacing">5</property>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="label" translatable="yes">Twitch username:</property>
-            <property name="hexpand">1</property>
-            <property name="halign">1</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkEntry" id="TwitchStreamerDialog-entry">
-            <property name="visible">True</property>
-            <property name="activates-default">True</property>
-          </object>
-        </child>
-      </object>
-    </child>
-    <child type="action">
-      <object class="GtkButton" id="TwitchStreamerDialog-cancel">
-        <property name="visible">True</property>
-        <property name="label" translatable="yes">Cancel</property>
-      </object>
-    </child>
-    <child type="action">
-      <object class="GtkButton" id="TwitchStreamerDialog-ok">
-        <property name="visible">True</property>
-        <property name="label" translatable="yes">Add</property>
-        <property name="has-default">True</property>
-        <style>
-          <class name="suggested-action"/>
-        </style>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="cancel">TwitchStreamerDialog-cancel</action-widget>
-      <action-widget response="ok" default="true">TwitchStreamerDialog-ok</action-widget>
-    </action-widgets>
+    </property>
+    <responses>
+      <response id="cancel" translatable="yes">Cancel</response>
+      <response id="ok" translatable="yes" appearance="suggested">Add</response>
+    </responses>
+    <property name="default-response">ok</property>
+    <property name="close-response">cancel</property>
   </object>
 
-  <!-- Main preferences widget -->
-  <object class="GtkGrid" id="prefs-widget">
-    <property name="visible">True</property>
-    <property name="orientation">vertical</property>
+  <!-- ============ Page: Streamers ============ -->
+
+  <object class="AdwPreferencesPage" id="streamers_page">
+    <property name="name">streamers</property>
+    <property name="title" translatable="yes">Streamers</property>
+    <property name="icon-name">avatar-default-symbolic</property>
+
     <child>
-      <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="margin-start">10</property>
-        <property name="margin-end">10</property>
-        <property name="margin-top">10</property>
-        <property name="margin-bottom">10</property>
-        <property name="spacing">5</property>
+      <object class="AdwPreferencesGroup" id="streamer_list_group">
+        <property name="title" translatable="yes">Your Streamers</property>
+        <property name="description" translatable="yes">Streamers you are actively monitoring.</property>
         <child>
-          <object class="GtkScrolledWindow" id="scrolledwindow1">
+          <object class="GtkScrolledWindow">
             <property name="visible">True</property>
-            <property name="child">
+            <property name="min-content-height">180</property>
+            <property name="max-content-height">300</property>
+            <property name="has-frame">True</property>
+            <style>
+              <class name="card"/>
+            </style>
+            <child>
               <object class="GtkTreeView" id="field_streamerslist">
                 <property name="visible">True</property>
                 <property name="hexpand">1</property>
                 <property name="vexpand">1</property>
               </object>
-            </property>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+
+    <child>
+      <object class="AdwPreferencesGroup" id="streamer_actions_group">
+        <property name="title" translatable="yes">Manage</property>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Add Twitch Streamer</property>
+            <property name="activatable-widget">add_twitch_streamer</property>
+            <child type="suffix">
+              <object class="GtkButton" id="add_twitch_streamer">
+                <property name="icon-name">list-add-symbolic</property>
+                <property name="valign">center</property>
+                <style>
+                  <class name="suggested-action"/>
+                  <class name="circular"/>
+                </style>
+              </object>
+            </child>
           </object>
         </child>
         <child>
-          <object class="GtkGrid">
-            <property name="visible">True</property>
-            <property name="orientation">vertical</property>
-            <child>
-              <object class="GtkBox">
-                <property name="visible">True</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkButton" id="add_twitch_streamer">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">Add Twitch streamer</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton" id="add_kick_streamer">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">Add Kick streamer</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton" id="del_streamer">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">Remove selected</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton" id="del_all_streamers">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">Remove all</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton" id="import_from_twitch">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">Import from Twitch user</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton" id="authenticate_oauth">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">OAuth authentication</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton" id="refresh_icons">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">Refresh profile images</property>
-                  </object>
-                </child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Add Kick Streamer</property>
+            <property name="activatable-widget">add_kick_streamer</property>
+            <child type="suffix">
+              <object class="GtkButton" id="add_kick_streamer">
+                <property name="icon-name">list-add-symbolic</property>
+                <property name="valign">center</property>
+                <style>
+                  <class name="suggested-action"/>
+                  <class name="circular"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Remove Selected Streamer</property>
+            <property name="activatable-widget">del_streamer</property>
+            <child type="suffix">
+              <object class="GtkButton" id="del_streamer">
+                <property name="icon-name">list-remove-symbolic</property>
+                <property name="valign">center</property>
+                <style>
+                  <class name="destructive-action"/>
+                  <class name="circular"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Clear All Streamers</property>
+            <property name="activatable-widget">del_all_streamers</property>
+            <child type="suffix">
+              <object class="GtkButton" id="del_all_streamers">
+                <property name="icon-name">edit-clear-all-symbolic</property>
+                <property name="valign">center</property>
+                <style>
+                  <class name="destructive-action"/>
+                  <class name="circular"/>
+                </style>
               </object>
             </child>
           </object>
@@ -288,32 +181,73 @@
     </child>
 
     <child>
-      <object class="GtkSeparator">
-        <property name="visible">True</property>
-      </object>
-    </child>
-
-    <child>
-      <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">5</property>
-
-        <!-- Topbar mode -->
+      <object class="AdwPreferencesGroup" id="twitch_import_group">
+        <property name="title" translatable="yes">Integrations &amp; Assets</property>
         <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="spacing">5</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property translatable="yes" name="label">Panel display</property>
-                <property name="hexpand">1</property>
-                <property name="halign">1</property>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Twitch OAuth Authentication</property>
+            <property name="subtitle" translatable="yes">Required for retrieving detailed Twitch data.</property>
+            <property name="activatable-widget">authenticate_oauth</property>
+            <child type="suffix">
+              <object class="GtkButton" id="authenticate_oauth">
+                <property name="label" translatable="yes">Authenticate</property>
+                <property name="valign">center</property>
               </object>
             </child>
-            <child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Import Twitch Follows</property>
+            <property name="subtitle" translatable="yes">Pull all channels you currently follow on Twitch.</property>
+            <property name="activatable-widget">import_from_twitch</property>
+            <child type="suffix">
+              <object class="GtkButton" id="import_from_twitch">
+                <property name="label" translatable="yes">Import</property>
+                <property name="valign">center</property>
+                <style>
+                  <class name="suggested-action"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Refresh Profile Images</property>
+            <property name="subtitle" translatable="yes">Manually fetch missing or updated profile pictures.</property>
+            <property name="activatable-widget">refresh_icons</property>
+            <child type="suffix">
+              <object class="GtkButton" id="refresh_icons">
+                <property name="icon-name">view-refresh-symbolic</property>
+                <property name="valign">center</property>
+                <style>
+                  <class name="circular"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+
+  <!-- ============ Page: Panel ============ -->
+
+  <object class="AdwPreferencesPage" id="panel_page">
+    <property name="name">panel</property>
+    <property name="title" translatable="yes">Panel</property>
+    <property name="icon-name">view-grid-symbolic</property>
+
+    <child>
+      <object class="AdwPreferencesGroup" id="display_group">
+        <property name="title" translatable="yes">Appearance</property>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Indicator Style</property>
+            <child type="suffix">
               <object class="GtkComboBox" id="field_topbarmode">
+                <property name="valign">center</property>
                 <property name="can_focus">0</property>
                 <property name="model">TopBarDisplay_ListStore</property>
                 <property name="id-column">0</property>
@@ -327,194 +261,17 @@
             </child>
           </object>
         </child>
-
-        <!-- Streamer notifications -->
         <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="spacing">5</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Streamer notifications</property>
-                <property name="hexpand">1</property>
-                <property name="halign">1</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSwitch" id="field_notifications-enabled">
-                <property name="visible">True</property>
-              </object>
-            </child>
-          </object>
-        </child>
-
-        <child>
-          <object class="GtkBox" id="obj_notifications-game-change">
-            <property name="visible">True</property>
-            <property name="spacing">5</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Game change notifications</property>
-                <property name="hexpand">1</property>
-                <property name="halign">1</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSwitch" id="field_notifications-game-change">
-                <property name="visible">True</property>
-              </object>
-            </child>
-          </object>
-        </child>
-
-        <child>
-          <object class="GtkBox" id="obj_notifications-streamer-icon">
-            <property name="visible">True</property>
-            <property name="spacing">5</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Show streamer icon on notifications</property>
-                <property name="hexpand">1</property>
-                <property name="halign">1</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSwitch" id="field_notifications-streamer-icon">
-                <property name="visible">True</property>
-              </object>
-            </child>
-          </object>
-        </child>
-
-        <!-- Update interval -->
-        <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="spacing">5</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Update Interval (min)</property>
-                <property name="hexpand">1</property>
-                <property name="halign">1</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSpinButton" id="field_interval">
-                <property name="visible">True</property>
-                <property name="adjustment">Adjust_Interval</property>
-              </object>
-            </child>
-          </object>
-        </child>
-
-        <!-- Twitch command -->
-        <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="orientation">vertical</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property translatable="yes" name="label">Command to execute for Twitch streamers</property>
-                <property name="hexpand">1</property>
-                <property name="halign">1</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkEntry" id="field_opencmd">
-                <property name="visible">True</property>
-              </object>
-            </child>
-          </object>
-        </child>
-
-        <!-- Kick command -->
-        <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="orientation">vertical</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property translatable="yes" name="label">Command to execute for Kick streamers</property>
-                <property name="hexpand">1</property>
-                <property name="halign">1</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkEntry" id="field_kickopencmd">
-                <property name="visible">True</property>
-              </object>
-            </child>
-          </object>
-        </child>
-
-        <!-- Hide playlist streams -->
-        <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="spacing">5</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property translatable="yes" name="label">Hide playlist streams</property>
-                <property name="hexpand">1</property>
-                <property name="halign">1</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSwitch" id="field_hideplaylists">
-                <property name="visible">True</property>
-              </object>
-            </child>
-          </object>
-        </child>
-
-        <!-- Hide indicator if empty -->
-        <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="spacing">5</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property translatable="yes" name="label">Hide indicator if nobody is streaming</property>
-                <property name="hexpand">1</property>
-                <property name="halign">1</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSwitch" id="field_hideempty">
-                <property name="visible">True</property>
-              </object>
-            </child>
-          </object>
-        </child>
-
-        <!-- Sort key -->
-        <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="spacing">5</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property translatable="yes" name="label">Sort streamers by</property>
-                <property name="hexpand">1</property>
-                <property name="halign">1</property>
-              </object>
-            </child>
-            <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Sort Menu By</property>
+            <child type="suffix">
               <object class="GtkComboBox" id="field_sortkey">
+                <property name="valign">center</property>
                 <property name="can_focus">0</property>
                 <property name="model">StreamSort_ListStore</property>
                 <property name="id-column">0</property>
                 <child>
-                  <object class="GtkCellRendererText" id="renderer"/>
+                  <object class="GtkCellRendererText"/>
                   <attributes>
                     <attribute name="text">1</attribute>
                   </attributes>
@@ -523,49 +280,89 @@
             </child>
           </object>
         </child>
+      </object>
+    </child>
 
-        <!-- Hide status -->
+    <child>
+      <object class="AdwPreferencesGroup" id="behavior_group">
+        <property name="title" translatable="yes">Behavior</property>
         <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="spacing">5</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property translatable="yes" name="label">Hide status line from the menu</property>
-                <property name="hexpand">1</property>
-                <property name="halign">1</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSwitch" id="field_hidestatus">
-                <property name="visible">True</property>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Update Interval (minutes)</property>
+            <child type="suffix">
+              <object class="GtkSpinButton" id="field_interval">
+                <property name="valign">center</property>
+                <property name="adjustment">Adjust_Interval</property>
               </object>
             </child>
           </object>
         </child>
-
-        <!-- Show uptime -->
         <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="spacing">5</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property translatable="yes" name="label">Show stream uptime</property>
-                <property name="hexpand">1</property>
-                <property name="halign">1</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkSwitch" id="field_showuptime">
-                <property name="visible">True</property>
-              </object>
-            </child>
+          <object class="AdwSwitchRow" id="field_hideempty">
+            <property name="title" translatable="yes">Hide indicator when nobody is live</property>
           </object>
         </child>
+        <child>
+          <object class="AdwSwitchRow" id="field_hideplaylists">
+            <property name="title" translatable="yes">Hide playlist and rerun streams</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSwitchRow" id="field_hidestatus">
+            <property name="title" translatable="yes">Hide stream status line in menu</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSwitchRow" id="field_showuptime">
+            <property name="title" translatable="yes">Show stream uptime</property>
+          </object>
+        </child>
+      </object>
+    </child>
 
+    <child>
+      <object class="AdwPreferencesGroup" id="notifications_group">
+        <property name="title" translatable="yes">Notifications</property>
+        <child>
+          <object class="AdwSwitchRow" id="field_notifications-enabled">
+            <property name="title" translatable="yes">Enable Notifications</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSwitchRow" id="field_notifications-game-change">
+            <property name="title" translatable="yes">Notify on game change</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSwitchRow" id="field_notifications-streamer-icon">
+            <property name="title" translatable="yes">Show streamer icon on notifications</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+
+  <!-- ============ Page: Commands ============ -->
+
+  <object class="AdwPreferencesPage" id="commands_page">
+    <property name="name">commands</property>
+    <property name="title" translatable="yes">Commands</property>
+    <property name="icon-name">utilities-terminal-symbolic</property>
+
+    <child>
+      <object class="AdwPreferencesGroup" id="commands_group">
+        <property name="title" translatable="yes">Launch Commands</property>
+        <property name="description" translatable="yes">These commands run when you click a live streamer. Use %streamer% as a placeholder for the username.</property>
+        <child>
+          <object class="AdwEntryRow" id="field_opencmd">
+            <property name="title" translatable="yes">Twitch Command</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwEntryRow" id="field_kickopencmd">
+            <property name="title" translatable="yes">Kick Command</property>
+          </object>
+        </child>
       </object>
     </child>
   </object>
