@@ -1,3 +1,6 @@
+Some of the files and code are temporary, just for testing currently. I know the Kick and Twitch icons are pretty ugly, but I'll change them when I get around to making new ones.
+This fork is still pretty fresh so they'll probably be tons of bugs, but right now it's working fine on my fedora machine.
+
 # Parasocial – GNOME Shell Extension
 
 **Parasocial** is a GNOME Shell extension that shows a panel indicator when your favorite streamers are live on **Twitch** and **Kick**.  
