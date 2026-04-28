@@ -8,35 +8,48 @@ import Gio from 'gi://Gio';
 
 const api_base = 'https://api.twitch.tv/helix/';
 const client_id = "1zat8h7je94boq5t88of6j09p41hg0";
-const oauth_token_path = GLib.get_user_cache_dir() + '/twitchlive-extension/oauth_token';
+const oauth_token_path = GLib.get_user_cache_dir() + '/parasocial-extension/oauth_token';
 
 /* OAuth */
 
 export function trigger_oauth(extension_path) {
   const url = "https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=" + client_id + "&redirect_uri=http://localhost:8877&scope=user%3Aread%3Afollows";
   const oauth_receiver = extension_path + "/oauth_receive.py";
-  GLib.spawn_command_line_async("xdg-open " + url);
-  GLib.spawn_sync(null, ["python3", oauth_receiver,  oauth_token_path], null, GLib.SpawnFlags.SEARCH_PATH, null);
+
+  let [success, pid] = GLib.spawn_async(
+    null,
+    ["python3", oauth_receiver, oauth_token_path],
+    null,
+    GLib.SpawnFlags.SEARCH_PATH,
+    null
+  );
+
+  if (!success) {
+    log("Parasocial: Failed to launch OAuth receiver script.");
+    return;
+  }
+
+  GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
+    GLib.spawn_command_line_async("xdg-open " + url);
+    return GLib.SOURCE_REMOVE;
+  });
 }
 
-function get_token() {
-  var tokenfile = Gio.File.new_for_path(oauth_token_path);
+export function get_token() {
+  let tokenfile = Gio.File.new_for_path(oauth_token_path);
   if (tokenfile.query_exists(null)) {
-    let success, content, tag;
-    [success, content, tag] = tokenfile.load_contents(null);
+    let [success, content, tag] = tokenfile.load_contents(null);
     return new TextDecoder().decode(content);
   }
   return undefined;
 }
 
-/* exported channel, stream */
-
-function load_json_async(httpSession, url, fun) {
+export function load_json_async(httpSession, url, headers, callback) {
   let message = Soup.Message.new('GET', url);
-  let oauth_token = get_token();
-  message.requestHeaders.append('Client-ID', client_id);
-  if (oauth_token) {
-    message.requestHeaders.append('Authorization', "Bearer " + oauth_token);
+  if (headers) {
+    for (let [key, value] of Object.entries(headers)) {
+      message.requestHeaders.append(key, value);
+    }
   }
 
   httpSession.send_and_read_async(
@@ -48,135 +61,7 @@ function load_json_async(httpSession, url, fun) {
       let decoder = new TextDecoder('utf-8');
       let response = decoder.decode(bytes.get_data());
       let data = JSON.parse(response);
-      fun(data);
+      callback(data);
     }
   );
-}
-
-// "chunk" an array into multiple chunks (for 100-per-request limit)
-function chunk(arr, len) {
-  var chunks = [],
-      i = 0,
-      n = arr.length;
-
-  while (i < n) {
-    chunks.push(arr.slice(i, i += len));
-  }
-
-  return chunks;
-}
-
-// gets a list of promises, waits on them, then resolves with the data - merged
-function promiseAllMerge(promises) {
-  return new Promise((resolve, reject) => {
-    Promise.all(promises).then(data => {
-      resolve([].concat.apply([], data));
-    }).catch(error => {
-      reject(error);
-    });
-  });
-}
-
-// https://dev.twitch.tv/docs/api/reference/#get-users
-export function users(session, userLogins) {
-    return usersLogin(session, userLogins);
-}
-
-function usersLogin(session, userLogins) {
-  const chunks = chunk(userLogins, 100);
-  const promises = [];
-  chunks.forEach((chunk) => {
-    promises.push(_users(session, chunk, "login"));
-  });
-  return promiseAllMerge(promises);
-}
-
-export function usersID(session, userLogins) {
-  const chunks = chunk(userLogins, 100);
-  const promises = [];
-  chunks.forEach((chunk) => {
-    promises.push(_users(session, chunk, "id"));
-  });
-  return promiseAllMerge(promises);
-}
-
-function _users(session, userLogins, key) {
-  return new Promise((resolve, reject) => {
-    let url = api_base + 'users?' + key + '=' + userLogins.join('&' + key + '=');
-    load_json_async(session, url, (data) => {
-      if (!data.error) {
-        resolve(data.data);
-      } else {
-        reject(data);
-      }
-    });
-  });
-}
-
-
-// https://dev.twitch.tv/docs/api/reference/#get-users-follows
-export function follows(session, userId) {
-  return new Promise((resolve, reject) => {
-    let url = api_base + 'channels/followed?user_id=' + encodeURI(userId) + '&first=100';
-    load_json_async(session, url, (data) => {
-      if (!data.error) {
-        resolve(data.data);
-      } else {
-        reject(data);
-      }
-    });
-  });
-}
-
-// https://dev.twitch.tv/docs/api/reference/#get-streams
-export function streams(session, userLogins) {
-  const chunks = chunk(userLogins, 100);
-  const promises = [];
-  chunks.forEach((chunk) => {
-    promises.push(_streams(session, chunk));
-  });
-  return promiseAllMerge(promises);
-}
-
-function _streams(session, userLogins) {
-  // TODO: split > 100 into groups and resolve as a promiseAll in this function
-  return new Promise((resolve, reject) => {
-    let url = api_base + 'streams?user_login=' + userLogins.map(encodeURI).join('&user_login=');
-    load_json_async(session, url, (data) => {
-      if (!data.error) {
-        resolve(data.data);
-      } else {
-        reject(data);
-      }
-    });
-  });
-}
-
-// https://dev.twitch.tv/docs/api/reference/#get-games
-export function games(session, gameIds) {
-  const chunks = chunk(gameIds, 100);
-  const promises = [];
-  chunks.forEach((chunk) => {
-    promises.push(_games(session, chunk));
-  });
-  return promiseAllMerge(promises);
-}
-
-function _games(session, gameIds) {
-  // TODO: split > 100 into groups and resolve as a promiseAll in this function
-  return new Promise((resolve, reject) => {
-    if (gameIds.length === 0) {
-      // zikeji: I'm lazy and don't want to properly handle 0 gameIds in extension.js so I'm handling it here
-      resolve([]);
-    } else {
-      let url = api_base + 'games?id=' + gameIds.join('&id=');
-      load_json_async(session, url, (data) => {
-        if (!data.error) {
-          resolve(data.data);
-        } else {
-          reject(data);
-        }
-      });
-    }
-  });
 }
