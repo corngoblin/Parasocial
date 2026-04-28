@@ -1,5 +1,5 @@
 Some of the files and code are temporary, just for testing currently. I know the Kick and Twitch icons are pretty ugly, but I'll change them when I get around to making new ones.
-This fork is still pretty fresh so they'll probably be tons of bugs, but right now it's working fine on my fedora machine.
+This fork is still pretty fresh so they'll probably be tons of bugs, but right now it's working fine on my fedora machine. I also used a bit of AI to rewrite the GUI.
 
 # Parasocial – GNOME Shell Extension
 
