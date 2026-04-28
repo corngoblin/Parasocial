@@ -1,0 +1,69 @@
+<schemalist gettext-domain="parasocial">
+  <schema id="org.gnome.shell.extensions.parasocial" path="/org/gnome/shell/extensions/parasocial/">
+    <key name="streamers" type="s">
+      <default>''</default>
+      <summary>Streamers, comma separated</summary>
+      <description>A comma separated list of account names to follow. Prefix with kick: for Kick streamers.</description>
+    </key>
+    <key name="opencmd" type="s">
+      <default>'xdg-open http://twitch.tv/%streamer%'</default>
+      <summary>Command to open Twitch streams</summary>
+      <description>The command executed when clicking on a Twitch streamer (use %streamer% for the login name).</description>
+    </key>
+    <key name="kick-opencmd" type="s">
+      <default>'xdg-open https://kick.com/%streamer%'</default>
+      <summary>Command to open Kick streams</summary>
+      <description>The command executed when clicking on a Kick streamer (use %streamer% for the login name).</description>
+    </key>
+    <key type="i" name="interval">
+      <default>5</default>
+      <summary>The interval between updates in minutes</summary>
+      <description>The interval between updates in minutes</description>
+    </key>
+    <key type="b" name="notifications-enabled">
+      <default>false</default>
+      <summary>Show streamer notifications</summary>
+      <description>Show a notification when a streamer comes online</description>
+    </key>
+    <key type="b" name="notifications-game-change">
+      <default>false</default>
+      <summary>Show streamer game changes</summary>
+      <description>Show a notification when a streamer changes games</description>
+    </key>
+    <key type="b" name="notifications-streamer-icon">
+      <default>false</default>
+      <summary>Show streamer icon on notifications</summary>
+      <description></description>
+    </key>
+    <key type="s" name="topbarmode">
+      <default>'all-icons'</default>
+      <summary>Indicator display setting</summary>
+      <description>empty, text-only, icon-only, count-only, all-icons</description>
+    </key>
+    <key type="b" name="hideplaylists">
+      <default>false</default>
+      <summary>Hide playlist streams</summary>
+      <description>Hide active streams that are playlist streams (reruns)</description>
+    </key>
+    <key type="b" name="hideempty">
+      <default>false</default>
+      <summary>Hide indicator if noone is streaming</summary>
+      <description></description>
+    </key>
+    <key type="s" name="sortkey">
+      <default>'COUNT'</default>
+      <summary>Sort key for streams in menu</summary>
+      <description>NAME, GAME or COUNT (default)</description>
+    </key>
+    <key type="b" name="hidestatus">
+      <default>false</default>
+      <summary>Hide status information</summary>
+      <description>Hide current channel status detail</description>
+    </key>
+    <key type="b" name="showuptime">
+      <default>false</default>
+      <summary>Show stream uptime</summary>
+      <description>Show how long the stream has been live</description>
+    </key>
+  </schema>
+</schemalist>
