@@ -12,7 +12,7 @@ import * as Icons from './icons.js';
 export var StreamerMenuItem = GObject.registerClass(
 {GTypeName: 'StreamerMenuItem'},
 class StreamerMenuItem extends PopupMenu.PopupBaseMenuItem {
-  _init(streamername, login, game, viewer_count, title, is_playlist=false, HIDESTATUS=false, uptime, platformIconPath, fullStreamerId) {
+  _init(streamername, login, game, viewer_count, title, is_playlist=false, HIDESTATUS=false, uptime, platformIconPath, fullStreamerId, titleMaxLen = 45) {
     super._init();
     this._streamer = streamername;
 
@@ -59,7 +59,12 @@ class StreamerMenuItem extends PopupMenu.PopupBaseMenuItem {
     this._wrapBox.add_child(this._firstLine);
 
     if (!HIDESTATUS) {
-      this._layout.title = new St.Label({ text: title, style_class : "title streamer-menuitem"});
+      const maxLen = titleMaxLen || 45;
+      let displayTitle = title || '';
+      if (displayTitle.length > maxLen) {
+        displayTitle = displayTitle.substring(0, maxLen) + '…';
+      }
+      this._layout.title = new St.Label({ text: displayTitle, style_class : "title streamer-menuitem"});
       this._wrapBox.add_child(this._layout.title);
     }
 
@@ -74,5 +79,3 @@ class NobodyMenuItem extends PopupMenu.PopupBaseMenuItem {
     this.add_child(new St.Label({ text: nobodytext, style_class : "nobody-menuitem"}));
   }
 });
-
-// PlatformHeaderMenuItem removed – no longer needed
