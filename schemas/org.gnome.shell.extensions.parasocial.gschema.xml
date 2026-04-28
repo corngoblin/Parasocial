@@ -20,6 +20,12 @@
       <summary>The interval between updates in minutes</summary>
       <description>The interval between updates in minutes</description>
     </key>
+    <key type="i" name="title-length">
+      <default>45</default>
+      <range min="10" max="200"/>
+      <summary>Max title length in menu</summary>
+      <description>Maximum number of characters shown for the stream title in the dropdown menu. Longer titles are truncated with an ellipsis.</description>
+    </key>
     <key type="b" name="notifications-enabled">
       <default>false</default>
       <summary>Show streamer notifications</summary>
