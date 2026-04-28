@@ -1,5 +1,6 @@
 /**
   AUTHOR: Mario Wenzel
+  Edited: corngoblin
   LICENSE: GPL3.0
 **/
 import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
