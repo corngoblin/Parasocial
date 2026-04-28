@@ -1,7 +1,6 @@
 /**
   AUTHORS: Mario Wenzel, Raphaël Rochet
   LICENSE: GPL3.0
-  COMPILING SCHEMAS: glib-compile-schemas schemas/
 **/
 import St from 'gi://St';
 import Gio from 'gi://Gio';
@@ -10,7 +9,6 @@ import GObject from 'gi://GObject';
 import GLib from 'gi://GLib';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import Soup from 'gi://Soup';
-const Mainloop = imports.mainloop;
 import Clutter from 'gi://Clutter';
 const Panel = Main.panel;
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
@@ -28,12 +26,15 @@ import * as Topbar from './topbar.js';
 import * as MenuItems from './menu_items.js';
 import * as Icons from './icons.js';
 import * as Games from './games.js';
+import * as TwitchProvider from './providers/twitch.js';
+import * as KickProvider from './providers/kick.js';
 import * as Api from './api.js';
 
 const viewUpdateInterval = 10*1000;
 
 let STREAMERS = [];
 let OPENCMD = "";
+let KICK_OPENCMD = "";
 let INTERVAL = 5*1000*60;
 let HIDEPLAYLISTS = false;
 let NOTIFICATIONS_ENABLED = false;
@@ -54,7 +55,7 @@ class SeparatorMenuItem extends PopupMenu.PopupBaseMenuItem {
       this._separator = new St.Widget({ style_class: 'popup-separator-menu-item',
                                         y_expand: true,
                                         y_align: Clutter.ActorAlign.CENTER });
-      this.add_child(this._separator); // this.actor.add(this._separator, { expand: true }); // this.add_child(this._separator, { expand: true }) is deprecated
+      this.add_child(this._separator);
   }
 });
 
@@ -70,16 +71,12 @@ const ExtensionLayout = GObject.registerClass(
       this.text = null;
       this.icon = null;
       this.online = [];
-      this.firstRun = true; // Avoids notifications on first run
+      this.firstRun = true;
       this.timer = { view: 0, update: 0, settings: 0 };
       this.settings = settings;
       this._httpSession = Soup.Session.new();
       this.layoutChanged = false;
       this.streamer_rotation = 0;
-
-
-      // Make soup use default system proxy if configured
-      // Soup.Session.prototype.add_feature.call(this._httpSession, new Soup.ProxyResolverDefault());
 
       this._box = new St.BoxLayout();
       this.add_child(this._box);
@@ -87,7 +84,6 @@ const ExtensionLayout = GObject.registerClass(
                               style_class: 'system-status-icon' });
       this._box.add_child(this.icon);
 
-      // Create menu section for streamers
       this.streamersMenu = new PopupMenu.PopupMenuSection();
       this.streamersMenuContainer = new PopupMenu.PopupMenuSection();
       let scrollView = new St.ScrollView({ overlay_scrollbars: true , hscrollbar_policy: Gtk.PolicyType.NEVER });
@@ -95,11 +91,9 @@ const ExtensionLayout = GObject.registerClass(
       this.streamersMenuContainer.actor.add_child(scrollView);
       this.menu.addMenuItem(this.streamersMenuContainer);
 
-      // Add separator
       this.spacer = new SeparatorMenuItem();
       this.menu.addMenuItem(this.spacer);
 
-      // Add 'Settings' menu item to open settings
       let settingsMenuItem = new PopupMenu.PopupMenuItem(_('Settings'));
       this.menu.addMenuItem(settingsMenuItem);
       settingsMenuItem.connect('activate', this._openSettings.bind(this));
@@ -113,19 +107,17 @@ const ExtensionLayout = GObject.registerClass(
       this.settings.connect('changed', this._applySettings.bind(this));
       this.menu.connect('open-state-changed', this._onMenuOpened.bind(this));
 
-      // Set up notifications area
       this.messageTray = new MessageTray.MessageTray();
-      this.notification_source = new MessageTray.Source({title: _('TwitchLive'), iconName: _('twitchlive'),});
-      this.notification_source.policy = new MessageTray.NotificationApplicationPolicy(_('twitchlive'));
-
+      this.notification_source = new MessageTray.Source({title: _('Parasocial'), iconName: _('parasocial')});
+      this.notification_source.policy = new MessageTray.NotificationApplicationPolicy(_('parasocial'));
       this.notification_source.connect('destroy', () => {this.notification_source = null;});
-
       this.messageTray.add(this.notification_source);
-    };
+    }
 
     _applySettings() {
       STREAMERS = this.settings.get_string('streamers').split(',');
       OPENCMD = this.settings.get_string('opencmd');
+      KICK_OPENCMD = this.settings.get_string('kick-opencmd');
       INTERVAL = this.settings.get_int('interval')*1000*60;
       HIDEPLAYLISTS = this.settings.get_boolean('hideplaylists');
       NOTIFICATIONS_ENABLED = this.settings.get_boolean('notifications-enabled');
@@ -147,58 +139,58 @@ const ExtensionLayout = GObject.registerClass(
             "icon-only": Topbar.icon_only
           }[TOPBARMODE]();
           this._box.add_child(this.streamertext.box);
+          this.topbar_mode = TOPBARMODE;
       }
 
-      if (this.timer.settings != 0) Mainloop.source_remove(this.timer.settings);
-      this.timer.settings = Mainloop.timeout_add(1000, () => {
+      if (this.timer.settings != 0) GLib.source_remove(this.timer.settings);
+      this.timer.settings = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
         this.timer.settings = 0;
         this.updateData();
-        return false;
+        return GLib.SOURCE_REMOVE;
       });
-
-    };
+    }
 
     destroy() {
-      if (this.timer.settings != 0) Mainloop.source_remove(this.timer.settings);
-      this.timer.settings = 0;
-      if (this.timer.update != 0) Mainloop.source_remove(this.timer.update);
-      this.timer.update = 0;
-      this.disable_view_update();
+      if (this.timer.settings != 0) GLib.source_remove(this.timer.settings);
+      if (this.timer.update != 0) GLib.source_remove(this.timer.update);
+      if (this.timer.view != 0) GLib.source_remove(this.timer.view);
+      this.timer = { view: 0, update: 0, settings: 0 };
       super.destroy();
-    };
+    }
 
     _openSettings() {
         Util.spawn([
             "gnome-extensions", "prefs",
             this.uuid
         ]);
-    };
+    }
 
     _execCmd(streamer) {
       this.menu.close();
-      let cmd = OPENCMD.replace(/%streamer%/g, streamer);
+      let entry = this.online.find(e => e.login === streamer);
+      let cmdTemplate;
+      if (entry && entry.platform === 'kick') {
+        cmdTemplate = KICK_OPENCMD;
+      } else {
+        cmdTemplate = OPENCMD;
+      }
+      let cmd = cmdTemplate.replaceAll('%streamer%', streamer);
       GLib.spawn_command_line_async(cmd);
-    };
+    }
 
     _findNewStreamerEntries(lastList, currentList, detectGameChange) {
       detectGameChange = detectGameChange || false;
-      if ( lastList.length == 0 )
-        return currentList;
+      if (lastList.length == 0) return currentList;
 
       let streamers = new Map();
-      lastList.forEach( ({streamer, game}) => streamers.set(streamer, game) );
+      lastList.forEach(({streamer, game}) => streamers.set(streamer, game));
 
-      return currentList.filter( ({streamer, game}) => {
-          if (!streamers.has(streamer))
-              return true;
-
-          if (detectGameChange &&
-              game != streamers.get(streamer))
-              return true;
-
+      return currentList.filter(({streamer, game}) => {
+          if (!streamers.has(streamer)) return true;
+          if (detectGameChange && game != streamers.get(streamer)) return true;
           return false;
       });
-    };
+    }
 
     _streamerOnlineNotification(streamer) {
       let notification = new MessageTray.Notification(
@@ -206,147 +198,195 @@ const ExtensionLayout = GObject.registerClass(
         _("%streamer% is live!").replace(/%streamer%/, streamer.streamer),
         _("Playing %game%").replace(/%game%/, streamer.game));
 
-      notification.addAction(_("Watch!"), function(){
-        // FIXME duplicate code from _execCmd
-        let cmd = OPENCMD.replace(/%streamer%/g, streamer.streamer);
+      notification.addAction(_("Watch!"), () => {
+        let cmdTemplate = streamer.platform === 'kick' ? KICK_OPENCMD : OPENCMD;
+        let cmd = cmdTemplate.replaceAll('%streamer%', streamer.login);
         GLib.spawn_command_line_async(cmd);
       });
 
-      var icon = NOTIFICATIONS_STREAMER_ICON ? Icons.get_streamericon(streamer.streamer, "notifications-icon") : new St.Icon({ gicon: Gio.icon_new_for_string(this.path + "/livestreamer-icons/twitchlive.svg"), style_class: "notifications-icon" });
-
-      this.notification_source.createIcon = function() {
-        return icon;
-      };
+      let icon = NOTIFICATIONS_STREAMER_ICON ? Icons.get_streamericon(streamer.fullId, "notifications-icon") : new St.Icon({ gicon: Gio.icon_new_for_string(this.path + "/livestreamer-icons/twitchlive.svg"), style_class: "notifications-icon" });
+      this.notification_source.createIcon = () => icon;
 
       if (shellVersion < 40) {
         this.notification_source.notify(notification);
       } else {
         this.notification_source.showNotification(notification);
       }
-    };
+    }
+
+    _parseStreamers() {
+      const twitch = [];
+      const kick = [];
+      STREAMERS.forEach(s => {
+        s = s.trim();
+        if (!s) return;
+        if (s.startsWith('kick:')) {
+          kick.push(s.substring(5).trim());
+        } else if (s.startsWith('twitch:')) {
+          twitch.push(s.substring(7).trim());
+        } else {
+          twitch.push(s);
+        }
+      });
+      return { twitch, kick };
+    }
 
     updateData() {
-      // disable timer and disable "update now" menu
-      if (this.timer.update != 0) Mainloop.source_remove(this.timer.update);
+      if (this.timer.update != 0) GLib.source_remove(this.timer.update);
       this.updateMenuItem.actor.reactive = false;
       this.updateMenuItem.label.set_text(_("Updating ..."));
 
       this.disable_view_update();
-      let menu = this.streamersMenu;
 
+      const { twitch, kick } = this._parseStreamers();
       let new_online = [];
 
-      const streamersList = STREAMERS.map((d) => d.trim()).filter((d) => d != "");
-      Api.streams(this._httpSession, streamersList).then((streams) => {
-        Games.getFromStreams(this._httpSession, streams).then((games) => {
-          streams.forEach((stream) => {
-            if (stream.type !== 'live' && HIDEPLAYLISTS) {
-              // zikeji: I've no idea if type !== 'live' designates playlists - the documentation doesn't mention playlists
-              return;
-            }
-            // The login name is stupidly not part of the response but weg get
-            // thumbnail_url:"https://static-cdn.jtvnw.net/previews-ttv/live_user_USERNAME-{width}x{height}.jpg
-            const loginName = stream.thumbnail_url.slice(52, -21);
-            const game = games.find(game => game.id === stream.game_id);
-            const gameName = game ? game.name : 'n/a'; // zikeji: may want to display something other than n/a if the game doesn't exist? not sure if this case would ever get hit
-            const uptime = SHOWUPTIME ? format_uptime((new Date() - new Date(stream.started_at)) / 1000) : false;
-            const item = new MenuItems.StreamerMenuItem(stream.user_name, loginName, gameName, stream.viewer_count, stream.title, stream.type !== 'live', HIDESTATUS, uptime);
-            item.connect("activate", () => this._execCmd(loginName));
-            new_online.push({
-              item: item, streamer: stream.user_name, login: loginName, game: gameName, viewers: stream.viewer_count, started_at: stream.started_at
+      const kickPromise = kick.length > 0
+        ? KickProvider.streams(this._httpSession, kick).then(streams => {
+            streams.forEach(s => new_online.push({
+              streamer: s.streamer,
+              login: s.login,
+              game: s.game || 'Kick',
+              viewer_count: s.viewer_count,
+              title: s.title || '',
+              type: 'live',
+              thumbnail_url: s.thumbnail_url,
+              platform: 'kick',
+              started_at: s.started_at || null,
+              fullId: 'kick:' + s.login
+            }));
+          })
+        : Promise.resolve();
+
+      const twitchPromise = twitch.length > 0
+        ? TwitchProvider.streams(this._httpSession, twitch).then(streams => {
+            return Games.getFromStreams(this._httpSession, streams).then(games => {
+              streams.forEach(stream => {
+                if (stream.type !== 'live' && HIDEPLAYLISTS) return;
+                const loginName = stream.thumbnail_url.slice(52, -21);
+                const game = games.find(g => g.id === stream.game_id);
+                const gameName = game ? game.name : 'n/a';
+                const uptime = SHOWUPTIME ? format_uptime((new Date() - new Date(stream.started_at)) / 1000) : false;
+                new_online.push({
+                  streamer: stream.user_name,
+                  login: loginName,
+                  game: gameName,
+                  viewer_count: stream.viewer_count,
+                  title: stream.title,
+                  type: stream.type,
+                  thumbnail_url: stream.thumbnail_url,
+                  platform: 'twitch',
+                  started_at: stream.started_at,
+                  uptime: uptime,
+                  fullId: 'twitch:' + loginName
+                });
+              });
             });
-          });
+          })
+        : Promise.resolve();
 
-          // Send the user a notification when new streamer(s) come online, if enabled
-          if ( NOTIFICATIONS_ENABLED ) {
-            if ( !this.firstRun )
-              this.firstRun = this.firstRun;
-              // Fixme: For unknown to me reason it prevents extension from working
-              //this._findNewStreamerEntries(this.online, new_online, NOTIFICATIONS_GAME_CHANGE).forEach(
-              //  (newStreamer) => this._streamerOnlineNotification(newStreamer)
-              //);
-            else
-              this.firstRun = !this.firstRun;
+      Promise.all([twitchPromise, kickPromise]).then(() => {
+        new_online.forEach(entry => {
+          const isPlaylist = (entry.platform === 'twitch' && entry.type !== 'live');
+          const hideStatus = HIDESTATUS;
+          const platformIconPath = this.path + '/livestreamer-icons/' + entry.platform + '.png';
+          const item = new MenuItems.StreamerMenuItem(
+            entry.streamer,
+            entry.login,
+            entry.game,
+            entry.viewer_count,
+            entry.title,
+            isPlaylist,
+            hideStatus,
+            entry.uptime || false,
+            platformIconPath,
+            entry.fullId
+          );
+          item.connect("activate", () => this._execCmd(entry.login));
+          entry.item = item;
+        });
+
+        if (NOTIFICATIONS_ENABLED) {
+          if (!this.firstRun) {
+            this._findNewStreamerEntries(this.online, new_online, NOTIFICATIONS_GAME_CHANGE)
+              .forEach(s => this._streamerOnlineNotification(s));
+          } else {
+            this.firstRun = false;
           }
-          // switch updated streamers
-          this.online = new_online;
-          // notify topbar actor
-          this.streamertext.update(new_online);
-          // clear menu
-          menu.removeAll();
-          this.spacer.actor.hide();
-          // store items for late menu draw
-          this.layoutChanged = true;
-          if (this.menu.isOpen) this.updateMenuLayout();
-          // make update now menu reactive again
-          this.updateMenuItem.actor.reactive = true;
-          this.updateMenuItem.label.set_text(_("Update now"));
-          this.enable_view_update();
+        }
 
-          // update indicator visibility if needed
-          if (!HIDEEMPTY || this.online.length) { this.show(); } else { this.hide(); } // visibility property seems deprecated
-        }).catch((d) => this.errorHandler(d));
-      }).catch((d) => this.errorHandler(d));
+        this.online = new_online;
+        this.streamertext.update(new_online);
 
-      //schedule next check
-      this.timer.update = Mainloop.timeout_add(INTERVAL, this.updateData.bind(this));
-      return false;
-    };
+        this.streamersMenu.removeAll();
+        this.spacer.actor.hide();
+        this.layoutChanged = true;
+        if (this.menu.isOpen) this.updateMenuLayout();
+
+        this.updateMenuItem.actor.reactive = true;
+        this.updateMenuItem.label.set_text(_("Update now"));
+        this.enable_view_update();
+        this.visible = !(HIDEEMPTY && this.online.length === 0);
+      }).catch(d => this.errorHandler(d));
+
+      this.timer.update = GLib.timeout_add(GLib.PRIORITY_DEFAULT, INTERVAL, () => {
+        this.updateData();
+        return GLib.SOURCE_REMOVE;
+      });
+    }
 
     errorHandler(data) {
       this.updateMenuItem.actor.reactive = true;
       this.updateMenuItem.label.set_text(data.error + " (" + data.message + ")");
-    };
+    }
 
     updateMenuLayout() {
       this.streamersMenu.removeAll();
 
       let online = this.online.slice();
-      //select sort
       let sortfunc;
-      if ( SORTKEY == 'NAME' ) {
+      if (SORTKEY == 'NAME') {
         sortfunc = (a,b) => a.streamer.toUpperCase() > b.streamer.toUpperCase() ? 1 : -1;
-      } else if ( SORTKEY == 'GAME' ) {
+      } else if (SORTKEY == 'GAME') {
         sortfunc = (a,b) => a.game.toUpperCase() > b.game.toUpperCase() ? 1 : -1;
-      } else if ( SORTKEY == 'UPTIME' ) {
-        sortfunc = (a,b) => a.started_at < b.started_at ? 1 : -1;
+      } else if (SORTKEY == 'UPTIME') {
+        sortfunc = (a,b) => (a.started_at || 0) < (b.started_at || 0) ? 1 : -1;
       } else {
-        sortfunc = (a,b) => a.viewers < b.viewers ? 1 : -1;
+        sortfunc = (a,b) => a.viewer_count < b.viewer_count ? 1 : -1;
       }
-      //apply sort
       online.sort(sortfunc);
 
-      let menuItems = online.map((d) => d.item);
-      menuItems.map((d) => this.streamersMenu.addMenuItem(d));
-      if (menuItems.length == 0) {
+      if (online.length === 0) {
         this.streamersMenu.addMenuItem(new MenuItems.NobodyMenuItem(_("Nobody is streaming")));
+        this.spacer.actor.hide();
+        this.layoutChanged = false;
+        return;
       }
-      else {
-        this.spacer.actor.show();
-        // gather sizes
-        let sizes = menuItems.map(get_size_info).reduce(max_size_info, [0,0,0,0]);
-        // set sizes
-        menuItems.map((item) => apply_size_info(item, sizes));
-      }
+
+      this.spacer.actor.show();
+      online.forEach(entry => this.streamersMenu.addMenuItem(entry.item));
+
       this.layoutChanged = false;
-    };
+    }
 
     _onMenuOpened() {
-      // This event is fired when menu is shown or hidden
       if (this.menu.isOpen && this.layoutChanged == true) {
         this.updateMenuLayout();
       }
-    };
+    }
 
     disable_view_update() {
-      if (this.timer.view != 0) Mainloop.source_remove(this.timer.view);
+      if (this.timer.view != 0) GLib.source_remove(this.timer.view);
       this.timer.view = 0;
-    };
+    }
 
     enable_view_update() {
       this.interval();
-      this.timer.view = Mainloop.timeout_add(viewUpdateInterval, this.interval.bind(this));
-    };
+      this.timer.view = GLib.timeout_add(GLib.PRIORITY_DEFAULT, viewUpdateInterval, () => {
+        this.interval();
+        return GLib.SOURCE_CONTINUE;
+      });
+    }
 
     interval() {
       let _online = this.online;
@@ -360,7 +400,7 @@ const ExtensionLayout = GObject.registerClass(
         this.streamertext.box.hide();
       }
       return true;
-    };
+    }
   }
 );
 
@@ -406,25 +446,22 @@ export default class TwitchLiveExtension extends Extension {
     super(metadata);
 
     var display = Gdk.Display.get_default();
-  
-    if (display == null) {
-      return;
-    }
-  
+    if (display == null) return;
+
     var icon_theme = Gtk.IconTheme.get_for_display(display);
-  
-    if (icon_theme == null) {
-      return;
-    }
-  
+    if (icon_theme == null) return;
+
     icon_theme.add_search_path(this.dir.get_child('livestreamer-icons').get_path());
     Icons.init_icons();
   }
+
   enable() {
     button = new ExtensionLayout(this.path, this.uuid, this.getSettings());
-    Panel.addToStatusArea('twitchlive', button, 0);
+    Panel.addToStatusArea('parasocial', button, 0);
   }
+
   disable() {
     button.destroy();
+    button = null;
   }
 }
