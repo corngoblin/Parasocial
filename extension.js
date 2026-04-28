@@ -193,10 +193,11 @@ const ExtensionLayout = GObject.registerClass(
     }
 
     _streamerOnlineNotification(streamer) {
-      let notification = new MessageTray.Notification(
-        this.notification_source,
-        _("%streamer% is live!").replace(/%streamer%/, streamer.streamer),
-        _("Playing %game%").replace(/%game%/, streamer.game));
+      let notification = new MessageTray.Notification({
+        source: this.notification_source,
+        title: _("%streamer% is live!").replace(/%streamer%/, streamer.streamer),
+        body: _("Playing %game%").replace(/%game%/, streamer.game)
+      });
 
       notification.addAction(_("Watch!"), () => {
         let cmdTemplate = streamer.platform === 'kick' ? KICK_OPENCMD : OPENCMD;
@@ -204,14 +205,15 @@ const ExtensionLayout = GObject.registerClass(
         GLib.spawn_command_line_async(cmd);
       });
 
-      let icon = NOTIFICATIONS_STREAMER_ICON ? Icons.get_streamericon(streamer.fullId, "notifications-icon") : new St.Icon({ gicon: Gio.icon_new_for_string(this.path + "/livestreamer-icons/twitchlive.svg"), style_class: "notifications-icon" });
+      let icon = NOTIFICATIONS_STREAMER_ICON ?
+        Icons.get_streamericon(streamer.fullId, "notifications-icon") :
+        new St.Icon({
+          gicon: Gio.icon_new_for_string(this.path + "/livestreamer-icons/twitchlive.svg"),
+          style_class: "notifications-icon"
+        });
       this.notification_source.createIcon = () => icon;
 
-      if (shellVersion < 40) {
-        this.notification_source.notify(notification);
-      } else {
-        this.notification_source.showNotification(notification);
-      }
+      this.notification_source.addNotification(notification);
     }
 
     _parseStreamers() {
@@ -286,6 +288,7 @@ const ExtensionLayout = GObject.registerClass(
         : Promise.resolve();
 
       Promise.all([twitchPromise, kickPromise]).then(() => {
+        let titleMaxLen = this.settings.get_int('title-length');
         new_online.forEach(entry => {
           const isPlaylist = (entry.platform === 'twitch' && entry.type !== 'live');
           const hideStatus = HIDESTATUS;
@@ -300,7 +303,8 @@ const ExtensionLayout = GObject.registerClass(
             hideStatus,
             entry.uptime || false,
             platformIconPath,
-            entry.fullId
+            entry.fullId,
+            titleMaxLen
           );
           item.connect("activate", () => this._execCmd(entry.login));
           entry.item = item;
