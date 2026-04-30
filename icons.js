@@ -17,7 +17,7 @@ export function has_icon(streamername) {
   return GLib.file_test(get_final_icon_path(streamername), GLib.FileTest.EXISTS);
 }
 
-// Native download + conversion (no curl / mogrify)
+// Native download + conversion 
 export function trigger_download_by_url(streamername, imageurl) {
   return new Promise((resolve, reject) => {
     const final = get_final_icon_path(streamername);
