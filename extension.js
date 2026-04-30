@@ -157,7 +157,6 @@ const ExtensionLayout = GObject.registerClass(
       if (this.timer.view != 0) GLib.source_remove(this.timer.view);
       this.timer = { view: 0, update: 0, settings: 0 };
 
-      // DISCONNECT the settings changed signal (Rule 4)
       if (this._settingsChangedId) {
         this.settings.disconnect(this._settingsChangedId);
         this._settingsChangedId = null;
@@ -165,7 +164,6 @@ const ExtensionLayout = GObject.registerClass(
       super.destroy();
     }
 
-    // (no changes below – all methods remain identical)
     _openSettings() {
         Util.spawn([
             "gnome-extensions", "prefs",
@@ -460,7 +458,6 @@ function format_uptime(seconds) {
 export default class TwitchLiveExtension extends Extension {
   constructor(metadata) {
     super(metadata);
-    // No GObject creation, no Gtk/Gdk imports – everything happens in enable()
   }
 
   enable() {
@@ -473,7 +470,6 @@ export default class TwitchLiveExtension extends Extension {
       button.destroy();
       button = null;
     }
-    // CLEAR module-scope variables (Rule 5)
     STREAMERS = [];
     OPENCMD = "";
     KICK_OPENCMD = "";
