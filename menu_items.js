@@ -1,5 +1,6 @@
 /**
   AUTHOR: Mario Wenzel
+  forked and heavily edited by corngoblin
   LICENSE: GPL3.0
 **/
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
