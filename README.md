@@ -26,4 +26,13 @@ Reason for the fork: Maweki seems busy or uninterested in continuing development
 
 - **Improve Icons**: The current icons are...okay... please create and submit new icons if you have time. 
 - **Translations**: If you notice poor translations or have a new language to contribute, please submit corrections or new translations. The current ones are done with AI.
-   
+
+---  
+
+# Copyright & License:
+- License - GPL 3.0
+- The Twitch and Kick logos used in this extension are trademarks of Twitch Interactive, Inc. and Kick Streaming Pty Ltd., respectively.
+- They are used here solely to identify the corresponding platforms.
+- This project is not affiliated with, endorsed by, or sponsored by Twitch or Kick.
+- No copyright or trademark infringement is intended.
+
