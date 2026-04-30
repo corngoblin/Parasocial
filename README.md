@@ -29,7 +29,7 @@ Reason for the fork: Maweki seems busy or uninterested in continuing development
 
 ---  
 
-# Copyright & License:
+# Copyright & License
 - License - GPL 3.0
 - The Twitch and Kick logos used in this extension are trademarks of Twitch Interactive, Inc. and Kick Streaming Pty Ltd., respectively.
 - They are used here solely to identify the corresponding platforms.
