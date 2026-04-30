@@ -27,8 +27,10 @@
 }
 
 .platform-icon {
-  width: 16px;
-  height: 16px;
+  height: 1em;           /* match the text height */
+  width: auto;           /* keep the original proportion */
+  min-width: 16px;       /* prevent them from becoming too tiny when very short */
+  max-width: 3em;        /* prevent absurdly wide icons from stretching the row */
   margin-right: 4px;
+  vertical-align: middle;
 }
-
