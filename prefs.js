@@ -75,7 +75,7 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
         window.set_search_enabled(true);
         window.set_default_size(600, 880);
 
-        // Icon theme setup – allowed in preferences process
+        // Icon theme setup 
         const iconsPath = GLib.get_user_cache_dir() + '/parasocial-extension';
         GLib.mkdir_with_parents(iconsPath, 448);
         const display = Gdk.Display.get_default();
@@ -142,7 +142,7 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
         updateNotifSensitivity();
         builder.get_object('field_notifications-enabled').connect('notify::active', updateNotifSensitivity);
 
-        // ── 3. STREAMER LIST (your working code) ──
+        // ── 3. STREAMER LIST  ──
         const store = new Gtk.ListStore();
         store.set_column_types([GObject.TYPE_STRING, GObject.TYPE_STRING]);
         const view = builder.get_object('field_streamerslist');
@@ -221,7 +221,7 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
         });
         view.append_column(col);
 
-        // ── 4. DIALOGS (your proven pattern) ──
+        // ── 4. DIALOGS  ──
         function createDialog(title, body, placeholder) {
             const entry = new Gtk.Entry({ placeholder_text: placeholder, activates_default: true });
             const dialog = new Adw.MessageDialog({
