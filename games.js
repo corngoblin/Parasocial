@@ -1,5 +1,4 @@
-import * as Api from './providers/twitch.js';   // now using the Twitch provider for games
-
+import * as Api from './providers/twitch.js';   
 const GAMES_CACHE = {};
 
 function get(session, gameIds) {
