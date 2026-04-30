@@ -1,6 +1,3 @@
-This fork is still pretty fresh so they'll probably be tons of bugs, but has worked on the distros I'v tested on (ubuntu, fedora). I also used a bit of AI to rewrite the GUI.
-I MAY add youtube support, but from the little i've looked into it, it seems like it'd be super annoying for your avarage user.
-
 # Parasocial – GNOME Shell Extension
 
 **Parasocial** is a GNOME Shell extension that shows a panel indicator when your favorite streamers are live on **Twitch** and **Kick**.  
