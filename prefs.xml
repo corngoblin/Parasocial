@@ -192,7 +192,7 @@
         <child>
           <object class="AdwActionRow">
             <property name="title" translatable="yes">Twitch OAuth Authentication</property>
-            <property name="subtitle" translatable="yes">Required for retrieving detailed Twitch data.</property>
+            <property name="subtitle" translatable="yes">Required for retrieving detailed Twitch data and using import function.</property>
             <property name="activatable-widget">authenticate_oauth</property>
             <child type="suffix">
               <object class="GtkButton" id="authenticate_oauth">
@@ -205,7 +205,7 @@
         <child>
           <object class="AdwActionRow">
             <property name="title" translatable="yes">Import Twitch Follows</property>
-            <property name="subtitle" translatable="yes">Pull all channels you currently follow on Twitch.</property>
+            <property name="subtitle" translatable="yes">Pull all channels you currently follow on Twitch. (Case Sensitive) </property>
             <property name="activatable-widget">import_from_twitch</property>
             <child type="suffix">
               <object class="GtkButton" id="import_from_twitch">
