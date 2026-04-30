@@ -18,7 +18,7 @@ Reason for the fork: Maweki seems busy or uninterested in continuing development
 - **Panel display modes** – show only the indicator icon, cycle through streamer names, icons, or a live count.
 - **Sorting options** – sort the menu by viewer count, name, game, or uptime.
 - **Hide features** – skip playlist streams (reruns), hide the panel when nobody is streaming, or hide the status line.
-- **Less dependencies** - Doesn't require Curl or mogrify any more.
+- **Fewer Dependencies** - No longer requires Curl or Mogrify. Instead, it uses GdkPixbuf and Soup, which are already utilized by GNOME.
 ---
 
 
