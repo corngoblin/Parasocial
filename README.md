@@ -36,3 +36,6 @@ Reason for the fork: Maweki seems busy or uninterested in continuing development
 - This project is not affiliated with, endorsed by, or sponsored by Twitch or Kick.
 - No copyright or trademark infringement is intended.
 
+# To-do
+- Maybe add youtube support?
+- Fix the icons
