@@ -6,6 +6,7 @@ import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Ex
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Gtk from 'gi://Gtk';
+import Gdk from 'gi://Gdk';
 import Adw from 'gi://Adw';
 import GObject from 'gi://GObject';
 import Soup from 'gi://Soup?version=3.0';
@@ -72,7 +73,17 @@ function _fetchKickProfilePicUrl(session, username) {
 export default class TwitchLivePreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         window.set_search_enabled(true);
-        window.set_default_size(600, 880); 
+        window.set_default_size(600, 880);
+
+        // Icon theme setup – allowed in preferences process
+        const iconsPath = GLib.get_user_cache_dir() + '/parasocial-extension';
+        GLib.mkdir_with_parents(iconsPath, 448);
+        const display = Gdk.Display.get_default();
+        if (display) {
+            const iconTheme = Gtk.IconTheme.get_for_display(display);
+            if (iconTheme) iconTheme.add_search_path(iconsPath);
+        }
+
         GLib.setenv('GSETTINGS_SCHEMA_DIR', this.dir.get_child('schemas').get_path(), true);
 
         const builder = new Gtk.Builder();
@@ -138,7 +149,6 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
         view.set_model(store);
 
         const session = Soup.Session.new();
-        Icons.init_icons();
         const streamers = new Set();
 
         function refreshView() {
