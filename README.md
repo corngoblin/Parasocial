@@ -6,6 +6,8 @@ You can launch the stream with a custom command – streamlink, your browser, or
 
 It is a fork of the original [TwitchLive Panel](https://github.com/maweki/twitchlive-extension) by Maweki.
 
+Reason for the fork: Maweki seems busy or uninterested in continuing development on the extension and keeping it up to date, so I decided to give it a whirl!
+
 ---
 
 ## Features
@@ -20,4 +22,8 @@ It is a fork of the original [TwitchLive Panel](https://github.com/maweki/twitch
 ---
 
 
+## Want to Help?
+
+- **Improve Icons**: The current icons are...okay... please create and submit new icons if you have time. 
+- **Translations**: If you notice poor translations or have a new language to contribute, please submit corrections or new translations. The current ones are done with AI.
    
