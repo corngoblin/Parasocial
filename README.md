@@ -1,5 +1,5 @@
-This fork is still pretty fresh so they'll probably be tons of bugs, but right now it's working fine on my fedora machine. I also used a bit of AI to rewrite the GUI.
-I MAY add youtube support, but from the little i've looked into it, it seems like it'd be super annoying for your avarage user. Right now, my main focus is to rewrite the GUI so that it complies with the extension guidelines.
+This fork is still pretty fresh so they'll probably be tons of bugs, but has worked on the distros I'v tested on (ubuntu, fedora). I also used a bit of AI to rewrite the GUI.
+I MAY add youtube support, but from the little i've looked into it, it seems like it'd be super annoying for your avarage user.
 
 # Parasocial – GNOME Shell Extension
 
