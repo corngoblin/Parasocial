@@ -1,0 +1,206 @@
+# Ukrainian translations for Parasocial GNOME Shell Extension
+# Copyright (C) 2025 corngoblin
+# This file is distributed under the same license as the Parasocial extension.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: parasocial 1.2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-04-30 00:00+0300\n"
+"PO-Revision-Date: 2025-04-30 00:00+0300\n"
+"Last-Translator: corngoblin <corngoblin@github.io>\n"
+"Language-Team: Ukrainian\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+msgid "Settings"
+msgstr "Налаштування"
+
+msgid "Update now"
+msgstr "Оновити"
+
+msgid "Updating ..."
+msgstr "Оновлення…"
+
+msgid "Nobody is streaming"
+msgstr "Ніхто не стримить"
+
+msgid "Parasocial"
+msgstr "Parasocial"
+
+msgid "%streamer% is live!"
+msgstr "%streamer% в прямому ефірі!"
+
+msgid "Playing %game%"
+msgstr "Грає в %game%"
+
+msgid "Watch!"
+msgstr "Дивитися!"
+
+msgid "Only indicator"
+msgstr "Лише індикатор"
+
+msgid "Streamers names"
+msgstr "Імена стримерів"
+
+msgid "Number of live streams"
+msgstr "Кількість прямих трансляцій"
+
+msgid "Streamers icons"
+msgstr "Іконки стримерів"
+
+msgid "Streamers icons (all)"
+msgstr "Іконки стримерів (усі)"
+
+msgid "Streamer name"
+msgstr "Імʼя стримера"
+
+msgid "Game title"
+msgstr "Назва гри"
+
+msgid "Viewers count"
+msgstr "Кількість глядачів"
+
+msgid "Stream uptime"
+msgstr "Тривалість трансляції"
+
+msgid "Cancel"
+msgstr "Скасувати"
+
+msgid "Add"
+msgstr "Додати"
+
+msgid "Add Twitch Streamer"
+msgstr "Додати Twitch‑стримера"
+
+msgid "Enter Twitch username"
+msgstr "Введіть ім'я користувача Twitch"
+
+msgid "Add Kick Streamer"
+msgstr "Додати Kick‑стримера"
+
+msgid "Enter Kick username"
+msgstr "Введіть ім'я користувача Kick"
+
+msgid "Import Twitch Follows"
+msgstr "Імпортувати підписки Twitch"
+
+msgid "Importing..."
+msgstr "Імпорт…"
+
+msgid "Import from Twitch"
+msgstr "Імпорт з Twitch"
+
+msgid "Import"
+msgstr "Імпорт"
+
+msgid "Enter your Twitch account username to import your follows."
+msgstr "Введіть ім'я користувача Twitch, щоб імпортувати ваші підписки."
+
+msgid "Enter the exact Twitch username."
+msgstr "Введіть точне ім'я користувача Twitch."
+
+msgid "Enter the exact Kick username."
+msgstr "Введіть точне ім'я користувача Kick."
+
+msgid "Streamers"
+msgstr "Стримери"
+
+msgid "Your Streamers"
+msgstr "Ваші стримери"
+
+msgid "Streamers you are actively monitoring."
+msgstr "Стримери, за якими ви стежите."
+
+msgid "Manage"
+msgstr "Керування"
+
+msgid "Remove Selected Streamer"
+msgstr "Видалити вибраного стримера"
+
+msgid "Clear All Streamers"
+msgstr "Видалити всіх стримерів"
+
+msgid "Integrations &amp; Assets"
+msgstr "Інтеграції та ресурси"
+
+msgid "Twitch OAuth Authentication"
+msgstr "Автентифікація Twitch OAuth"
+
+msgid "Required for retrieving detailed Twitch data and using import function."
+msgstr "Потрібно для отримання детальних даних Twitch та використання функції імпорту."
+
+msgid "Authenticate"
+msgstr "Увійти"
+
+msgid "Pull all channels you currently follow on Twitch. (Case Sensitive)"
+msgstr "Отримати всі канали, за якими ви стежите на Twitch. (З урахуванням регістру)"
+
+msgid "Refresh Profile Images"
+msgstr "Оновити зображення профілю"
+
+msgid "Manually fetch missing or updated profile pictures."
+msgstr "Вручну завантажити відсутні або оновлені зображення профілю."
+
+msgid "Panel"
+msgstr "Панель"
+
+msgid "Appearance"
+msgstr "Вигляд"
+
+msgid "Indicator Style"
+msgstr "Стиль індикатора"
+
+msgid "Sort Menu By"
+msgstr "Сортувати меню за"
+
+msgid "Behavior"
+msgstr "Поведінка"
+
+msgid "Update Interval (minutes)"
+msgstr "Інтервал оновлення (хв)"
+
+msgid "Max Title Length"
+msgstr "Макс. довжина заголовка"
+
+msgid "Hide indicator when nobody is live"
+msgstr "Приховати індикатор, якщо ніхто не в ефірі"
+
+msgid "Hide playlist and rerun streams"
+msgstr "Приховувати плейлисти та повторні трансляції"
+
+msgid "Hide stream status line in menu"
+msgstr "Приховати рядок статусу трансляції в меню"
+
+msgid "Show stream uptime"
+msgstr "Показувати тривалість трансляції"
+
+msgid "Notifications"
+msgstr "Сповіщення"
+
+msgid "Enable Notifications"
+msgstr "Увімкнути сповіщення"
+
+msgid "Notify on game change"
+msgstr "Сповіщати про зміну гри"
+
+msgid "Show streamer icon on notifications"
+msgstr "Показувати іконку стримера в сповіщеннях"
+
+msgid "Commands"
+msgstr "Команди"
+
+msgid "Launch Commands"
+msgstr "Команди запуску"
+
+msgid "These commands run when you click a live streamer. Use %streamer% as a placeholder for the username."
+msgstr "Ці команди виконуються, коли ви натискаєте на стримера в прямому ефірі. Використовуйте %streamer% як заповнювач для імені користувача."
+
+msgid "Twitch Command"
+msgstr "Команда Twitch"
+
+msgid "Kick Command"
+msgstr "Команда Kick"
