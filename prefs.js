@@ -72,7 +72,7 @@ function _fetchKickProfilePicUrl(session, username) {
 export default class TwitchLivePreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         window.set_search_enabled(true);
-
+        window.set_default_size(600, 880); 
         GLib.setenv('GSETTINGS_SCHEMA_DIR', this.dir.get_child('schemas').get_path(), true);
 
         const builder = new Gtk.Builder();
@@ -156,7 +156,10 @@ export default class TwitchLivePreferences extends ExtensionPreferences {
 
         function saveStreamers() {
             let list = [];
-            store.foreach((model, path, iter) => list.push(model.get_value(iter, 0)));
+            store.foreach((model, path, iter) => {
+                list.push(model.get_value(iter, 0));
+                return false;
+            });
             settings.set_string('streamers', list.join(','));
         }
 
