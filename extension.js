@@ -273,7 +273,11 @@ const ExtensionLayout = GObject.registerClass(
       const sorters = {
         'NAME': (a, b) => a.streamer.localeCompare(b.streamer),
         'GAME': (a, b) => a.game.localeCompare(b.game),
-        'UPTIME': (a, b) => (b.started_at || 0) - (a.started_at || 0),
+        'UPTIME': (a, b) => {
+            const timeA = a.started_at ? new Date(a.started_at).getTime() : 0;
+            const timeB = b.started_at ? new Date(b.started_at).getTime() : 0;
+            return timeB - timeA;
+        },
         'COUNT': (a, b) => b.viewer_count - a.viewer_count
       };
       
