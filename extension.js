@@ -81,7 +81,7 @@ const ExtensionLayout = GObject.registerClass(
       this.add_child(this._box);
       // panel default icon → para.svg
       this.icon = new St.Icon({ gicon: Gio.icon_new_for_string(this.path + "/livestreamer-icons/para.svg"),
-                              style_class: 'system-status-icon' });
+                          style_class: 'parasocial-panel-icon system-status-icon' });
       this._box.add_child(this.icon);
 
       this.streamersMenu = new PopupMenu.PopupMenuSection();
@@ -157,6 +157,7 @@ const ExtensionLayout = GObject.registerClass(
       if (this.timer.view != 0) GLib.source_remove(this.timer.view);
       this.timer = { view: 0, update: 0, settings: 0 };
 
+      // DISCONNECT the settings changed signal
       if (this._settingsChangedId) {
         this.settings.disconnect(this._settingsChangedId);
         this._settingsChangedId = null;
@@ -272,10 +273,10 @@ const ExtensionLayout = GObject.registerClass(
             return Games.getFromStreams(this._httpSession, streams).then(games => {
               streams.forEach(stream => {
                 if (stream.type !== 'live' && HIDEPLAYLISTS) return;
-                const loginName = stream.thumbnail_url.slice(52, -21);
+                const loginName = stream.user_login;
                 const game = games.find(g => g.id === stream.game_id);
                 const gameName = game ? game.name : 'n/a';
-                const uptime = SHOWUPTIME ? format_uptime((new Date() - new Date(stream.started_at)) / 1000) : false;
+                // uptime computed centrally later
                 new_online.push({
                   streamer: stream.user_name,
                   login: loginName,
@@ -286,7 +287,6 @@ const ExtensionLayout = GObject.registerClass(
                   thumbnail_url: stream.thumbnail_url,
                   platform: 'twitch',
                   started_at: stream.started_at,
-                  uptime: uptime,
                   fullId: 'twitch:' + loginName
                 });
               });
@@ -299,8 +299,13 @@ const ExtensionLayout = GObject.registerClass(
         new_online.forEach(entry => {
           const isPlaylist = (entry.platform === 'twitch' && entry.type !== 'live');
           const hideStatus = HIDESTATUS;
-          // platform icon → .svg
           const platformIconPath = this.path + '/livestreamer-icons/' + entry.platform + '.svg';
+
+          // Compute uptime centrally for all platforms
+          const uptime = SHOWUPTIME && entry.started_at
+            ? format_uptime((Date.now() - new Date(entry.started_at).getTime()) / 1000)
+            : false;
+
           const item = new MenuItems.StreamerMenuItem(
             entry.streamer,
             entry.login,
@@ -309,7 +314,7 @@ const ExtensionLayout = GObject.registerClass(
             entry.title,
             isPlaylist,
             hideStatus,
-            entry.uptime || false,
+            uptime,
             platformIconPath,
             entry.fullId,
             titleMaxLen
@@ -376,6 +381,7 @@ const ExtensionLayout = GObject.registerClass(
       }
 
       this.spacer.actor.show();
+      // NO more pixel‑perfect alignment – the card layout handles it naturally
       online.forEach(entry => this.streamersMenu.addMenuItem(entry.item));
 
       this.layoutChanged = false;
@@ -403,13 +409,11 @@ const ExtensionLayout = GObject.registerClass(
     interval() {
       let _online = this.online;
       if (_online.length > 0) {
-        // live icon → para_on.svg
         this.icon.set_gicon(Gio.icon_new_for_string(this.path + "/livestreamer-icons/para_on.svg"));
         this.streamertext.interval();
         this.streamertext.box.show();
       }
       else {
-        // offline icon → para_off.svg
         this.icon.set_gicon(Gio.icon_new_for_string(this.path + "/livestreamer-icons/para_off.svg"));
         this.streamertext.box.hide();
       }
@@ -418,36 +422,9 @@ const ExtensionLayout = GObject.registerClass(
   }
 );
 
-function max_size_info(size_info1, size_info2) {
-  return [
-    Math.max(size_info1[0], size_info2[0]),
-    Math.max(size_info1[1], size_info2[1]),
-    Math.max(size_info1[2], size_info2[2]),
-    Math.max(size_info1[3], size_info2[3])
-  ];
-}
+// ──────────────────────────── helper functions ────────────────────────────
 
-function get_size_info(item) {
-  return [
-    item._layout.name.get_allocation_box().get_width(),
-    item._layout.game.get_allocation_box().get_width(),
-    item._layout.viewer_count.get_allocation_box().get_width(),
-    item._layout.uptime ? item._layout.uptime.get_allocation_box().get_width() : 0
-  ];
-}
-
-function apply_size_info(item, size_info) {
-  let viewer_count_size_diff = size_info[2] - item._layout.viewer_count.get_allocation_box().get_width();
-  item._layout.name.set_width(size_info[0]);
-  item._layout.game.set_width(size_info[1] + viewer_count_size_diff);
-  item._layout.viewer_count.set_width(size_info[2] - viewer_count_size_diff);
-  if (item._layout.uptime) {
-    item._layout.uptime.set_width(size_info[3]);
-  }
-  if ( item._layout.title ) {
-    item._layout.title.set_width(size_info[0] + size_info[1] + size_info[2] + size_info[3]);
-  }
-}
+// (max_size_info, get_size_info, apply_size_info are removed – no longer needed)
 
 function format_uptime(seconds) {
   const hours   = Math.floor(seconds / 3600);

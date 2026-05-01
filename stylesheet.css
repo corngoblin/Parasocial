@@ -1,36 +1,78 @@
-.viewer-icon, .streamer-icon {
-  height: 1em;
-  width: 1.4em;
-  margin-right: 6px;
+/* Container layout */
+.streamer-menuitem-container {
+  spacing: 14px;
+  padding: 6px 8px;
 }
 
-.viewer-count, .uptime {
-  text-align: right;
+/* Avatar styling */
+.streamer-avatar-box {
+  padding-top: 2px;
 }
 
-.streamer-menuitem.name {
-  font-weight: 600;
+/* Dropdown and Panel streamer avatars (halved size) */
+.streamer-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
 }
 
-.streamer-menuitem.viewer-count,
-.streamer-menuitem.game,
-.streamer-menuitem.name,
-.streamer-menuitem.viewer-icon,
-.streamer-menuitem.uptime {
-  margin-left: 1em;
+/* Panel icons specifically: bring them closer together */
+.system-status-icon.streamer-icon {
+  margin-left: 2px;
+  margin-right: 2px;
 }
 
-.streamer-menuitem.title {
-  font-size: 90%;
-  margin-top: 0.3em;
-  margin-left: 2.67em; /* (1.4 + 1) / 0.9 */
+/* Details column */
+.streamer-details-box {
+  spacing: 2px;
+}
+
+.streamer-name {
+  font-weight: bold;
+  font-size: 1.05em;
 }
 
 .platform-icon {
-  height: 1em;           /* match the text height */
-  width: auto;           /* keep the original proportion */
-  min-width: 16px;       /* prevent them from becoming too tiny when very short */
-  max-width: 3em;        /* prevent absurdly wide icons from stretching the row */
-  margin-right: 4px;
-  vertical-align: middle;
+  height: 20px;        
+  margin-left: 6px;
+}
+
+.streamer-game {
+  font-size: 0.9em;
+  opacity: 0.75;
+}
+
+.streamer-title {
+  font-size: 0.8em;
+  opacity: 0.55;
+  margin-top: 1px;
+}
+
+/* Stats column */
+.streamer-stats-box {
+  spacing: 6px;
+  min-width: 70px;
+}
+
+.viewer-icon, .uptime-icon {
+  width: 1.1em;
+  height: 1.1em;
+  margin-right: 6px;
+  opacity: 0.75;
+}
+
+.streamer-viewer-count, .streamer-uptime {
+  font-size: 0.9em;
+  font-weight: bold;
+  text-align: right;
+  opacity: 0.9;
+}
+
+.nobody-menuitem {
+  font-style: italic;
+  opacity: 0.7;
+  padding: 12px;
+}
+.parasocial-panel-icon {
+  icon-size: 22px;       
 }
