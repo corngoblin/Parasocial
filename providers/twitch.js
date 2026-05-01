@@ -1,72 +1,45 @@
-import Soup from 'gi://Soup';
 import { load_json_async, get_token } from '../api.js';
 
-const api_base = 'https://api.twitch.tv/helix/';
-const client_id = "1zat8h7je94boq5t88of6j09p41hg0";
+const API_BASE = 'https://api.twitch.tv/helix/';
+const CLIENT_ID = "1zat8h7je94boq5t88of6j09p41hg0";
 
-function chunk(arr, len) {
-  let chunks = [], i = 0, n = arr.length;
-  while (i < n) chunks.push(arr.slice(i, i += len));
-  return chunks;
-}
+// Array helpers
+const chunkArray = (arr, size) => 
+  Array.from({ length: Math.ceil(arr.length / size) }, (_, i) => arr.slice(i * size, (i + 1) * size));
 
-function promiseAllMerge(promises) {
-  return Promise.all(promises).then(data => [].concat.apply([], data));
-}
-
+// Core fetcher
 function _fetch(session, url) {
   return new Promise((resolve, reject) => {
-    let headers = { 'Client-ID': client_id };
-    let token = get_token();
-    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const headers = { 'Client-ID': CLIENT_ID };
+    const token = get_token();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     load_json_async(session, url, headers, data => {
-      if (!data.error) resolve(data.data);
-      else reject(data);
+      data?.error ? reject(data) : resolve(data?.data || []);
     });
   });
 }
 
-// Public functions that match the old api.js interface
-export function streams(session, userLogins) {
-  const chunks = chunk(userLogins, 100);
-  const promises = chunks.map(chunk => {
-    let url = api_base + 'streams?user_login=' + chunk.map(encodeURI).join('&user_login=');
-    return _fetch(session, url);
-  });
-  return promiseAllMerge(promises);
+// Reusable chunked request handler
+async function fetchInChunks(session, items, endpoint, paramName) {
+  if (!items?.length) return [];
+  
+  const chunks = chunkArray(items, 100);
+  const results = await Promise.all(chunks.map(chunk => {
+    const query = chunk.map(encodeURIComponent).join(`&${paramName}=`);
+    return _fetch(session, `${API_BASE}${endpoint}?${paramName}=${query}`);
+  }));
+  
+  return results.flat();
 }
 
-export function games(session, gameIds) {
-  const chunks = chunk(gameIds, 100);
-  const promises = chunks.map(chunk => {
-    if (chunk.length === 0) return Promise.resolve([]);
-    let url = api_base + 'games?id=' + chunk.join('&id=');
-    return _fetch(session, url);
-  });
-  return promiseAllMerge(promises);
-}
-
-export function users(session, userLogins) {
-  const chunks = chunk(userLogins, 100);
-  const promises = chunks.map(chunk => {
-    let url = api_base + 'users?login=' + chunk.join('&login=');
-    return _fetch(session, url);
-  });
-  return promiseAllMerge(promises);
-}
-
-export function usersID(session, ids) {
-  const chunks = chunk(ids, 100);
-  const promises = chunks.map(chunk => {
-    let url = api_base + 'users?id=' + chunk.join('&id=');
-    return _fetch(session, url);
-  });
-  return promiseAllMerge(promises);
-}
+// Public API
+export const streams = (session, logins) => fetchInChunks(session, logins, 'streams', 'user_login');
+export const games = (session, ids) => fetchInChunks(session, ids, 'games', 'id');
+export const users = (session, logins) => fetchInChunks(session, logins, 'users', 'login');
+export const usersID = (session, ids) => fetchInChunks(session, ids, 'users', 'id');
 
 export function follows(session, userId) {
-  return new Promise((resolve, reject) => {
-    let url = api_base + 'channels/followed?user_id=' + encodeURIComponent(userId) + '&first=100';
-    _fetch(session, url).then(resolve).catch(reject);
-  });
+  const url = `${API_BASE}channels/followed?user_id=${encodeURIComponent(userId)}&first=100`;
+  return _fetch(session, url);
 }

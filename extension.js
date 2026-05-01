@@ -7,19 +7,14 @@ import St from 'gi://St';
 import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
 import GLib from 'gi://GLib';
-import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import Soup from 'gi://Soup';
 import Clutter from 'gi://Clutter';
-const Panel = Main.panel;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as Util from 'resource:///org/gnome/shell/misc/util.js';
 import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
-import * as Config from 'resource:///org/gnome/shell/misc/config.js';
-import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
-
-const [major] = Config.PACKAGE_VERSION.split('.');
-const shellVersion = Number.parseInt(major);
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import * as Topbar from './topbar.js';
 import * as MenuItems from './menu_items.js';
@@ -27,33 +22,19 @@ import * as Icons from './icons.js';
 import * as Games from './games.js';
 import * as TwitchProvider from './providers/twitch.js';
 import * as KickProvider from './providers/kick.js';
-import * as Api from './api.js';
 
-const viewUpdateInterval = 10*1000;
-
-let STREAMERS = [];
-let OPENCMD = "";
-let KICK_OPENCMD = "";
-let INTERVAL = 5*1000*60;
-let HIDEPLAYLISTS = false;
-let NOTIFICATIONS_ENABLED = false;
-let NOTIFICATIONS_GAME_CHANGE = false;
-let NOTIFICATIONS_STREAMER_ICON = false;
-let HIDEEMPTY = false;
-let SORTKEY = 'COUNT';
-let HIDESTATUS = false;
-let SHOWUPTIME = false;
-let TOPBARMODE = 'all-icons';
-
+const VIEW_UPDATE_INTERVAL = 10 * 1000;
 let button;
 
-var SeparatorMenuItem = GObject.registerClass(
+const SeparatorMenuItem = GObject.registerClass(
 class SeparatorMenuItem extends PopupMenu.PopupBaseMenuItem {
   _init() {
-      super._init({ reactive: false, can_focus: false});
-      this._separator = new St.Widget({ style_class: 'popup-separator-menu-item',
-                                        y_expand: true,
-                                        y_align: Clutter.ActorAlign.CENTER });
+      super._init({ reactive: false, can_focus: false });
+      this._separator = new St.Widget({ 
+          style_class: 'popup-separator-menu-item',
+          y_expand: true,
+          y_align: Clutter.ActorAlign.CENTER 
+      });
       this.add_child(this._separator);
   }
 });
@@ -62,31 +43,30 @@ const ExtensionLayout = GObject.registerClass(
   class ExtensionLayout extends PanelMenu.Button {
     _init(path, uuid, settings) {
       super._init(0.0);
-
       this.path = path;
       this.uuid = uuid;
+      this.settings = settings;
+      
+      this.config = {};
       this.streamertext = null;
-      this.topbar_mode = '';
-      this.text = null;
-      this.icon = null;
       this.online = [];
       this.firstRun = true;
-      this.timer = { view: 0, update: 0, settings: 0 };
-      this.settings = settings;
-      this._httpSession = Soup.Session.new();
       this.layoutChanged = false;
-      this.streamer_rotation = 0;
+      this.timer = { view: 0, update: 0, settings: 0 };
+      this._httpSession = Soup.Session.new();
 
       this._box = new St.BoxLayout();
       this.add_child(this._box);
-      // panel default icon → para.svg
-      this.icon = new St.Icon({ gicon: Gio.icon_new_for_string(this.path + "/livestreamer-icons/para.svg"),
-                          style_class: 'parasocial-panel-icon system-status-icon' });
+
+      this.icon = new St.Icon({ 
+          gicon: Gio.icon_new_for_string(`${this.path}/livestreamer-icons/para.svg`),
+          style_class: 'parasocial-panel-icon system-status-icon' 
+      });
       this._box.add_child(this.icon);
 
       this.streamersMenu = new PopupMenu.PopupMenuSection();
       this.streamersMenuContainer = new PopupMenu.PopupMenuSection();
-      let scrollView = new St.ScrollView({ overlay_scrollbars: true , hscrollbar_policy: St.PolicyType.NEVER });
+      let scrollView = new St.ScrollView({ overlay_scrollbars: true, hscrollbar_policy: St.PolicyType.NEVER });
       scrollView.add_child(this.streamersMenu.actor);
       this.streamersMenuContainer.actor.add_child(scrollView);
       this.menu.addMenuItem(this.streamersMenuContainer);
@@ -95,55 +75,57 @@ const ExtensionLayout = GObject.registerClass(
       this.menu.addMenuItem(this.spacer);
 
       let settingsMenuItem = new PopupMenu.PopupMenuItem(_('Settings'));
+      settingsMenuItem.connect('activate', () => Util.spawn(["gnome-extensions", "prefs", this.uuid]));
       this.menu.addMenuItem(settingsMenuItem);
-      settingsMenuItem.connect('activate', this._openSettings.bind(this));
 
       this.updateMenuItem = new PopupMenu.PopupMenuItem(_('Update now'));
       this.updateMenuContainer = new PopupMenu.PopupMenuSection();
       this.updateMenuContainer.actor.add_child(this.updateMenuItem.actor);
       this.menu.addMenuItem(this.updateMenuContainer);
       this.updateMenuItem.connect('activate', this.updateData.bind(this));
+
       this._applySettings();
-      // STORE the handler ID so it can be disconnected later
       this._settingsChangedId = this.settings.connect('changed', this._applySettings.bind(this));
       this.menu.connect('open-state-changed', this._onMenuOpened.bind(this));
 
       this.messageTray = new MessageTray.MessageTray();
-      this.notification_source = new MessageTray.Source({title: _('Parasocial'), iconName: _('parasocial')});
+      this.notification_source = new MessageTray.Source({ title: _('Parasocial'), iconName: _('parasocial') });
       this.notification_source.policy = new MessageTray.NotificationApplicationPolicy(_('parasocial'));
-      this.notification_source.connect('destroy', () => {this.notification_source = null;});
+      this.notification_source.connect('destroy', () => { this.notification_source = null; });
       this.messageTray.add(this.notification_source);
     }
 
     _applySettings() {
-      STREAMERS = this.settings.get_string('streamers').split(',');
-      OPENCMD = this.settings.get_string('opencmd');
-      KICK_OPENCMD = this.settings.get_string('kick-opencmd');
-      INTERVAL = this.settings.get_int('interval')*1000*60;
-      HIDEPLAYLISTS = this.settings.get_boolean('hideplaylists');
-      NOTIFICATIONS_ENABLED = this.settings.get_boolean('notifications-enabled');
-      NOTIFICATIONS_GAME_CHANGE = this.settings.get_boolean('notifications-game-change');
-      NOTIFICATIONS_STREAMER_ICON = this.settings.get_boolean('notifications-streamer-icon');
-      HIDEEMPTY = this.settings.get_boolean('hideempty');
-      SORTKEY = this.settings.get_string('sortkey');
-      HIDESTATUS = this.settings.get_boolean('hidestatus');
-      SHOWUPTIME = this.settings.get_boolean('showuptime');
-      TOPBARMODE = this.settings.get_string('topbarmode');
+      this.config = {
+        streamers: this.settings.get_string('streamers').split(',').map(s => s.trim()).filter(Boolean),
+        openCmd: this.settings.get_string('opencmd'),
+        kickOpenCmd: this.settings.get_string('kick-opencmd'),
+        interval: this.settings.get_int('interval') * 1000 * 60,
+        hidePlaylists: this.settings.get_boolean('hideplaylists'),
+        notifsEnabled: this.settings.get_boolean('notifications-enabled'),
+        notifsGameChange: this.settings.get_boolean('notifications-game-change'),
+        notifsStreamerIcon: this.settings.get_boolean('notifications-streamer-icon'),
+        hideEmpty: this.settings.get_boolean('hideempty'),
+        sortKey: this.settings.get_string('sortkey'),
+        hideStatus: this.settings.get_boolean('hidestatus'),
+        showUptime: this.settings.get_boolean('showuptime'),
+        topbarMode: this.settings.get_string('topbarmode'),
+        titleLen: this.settings.get_int('title-length')
+      };
 
-      if (this.topbar_mode != TOPBARMODE) {
+      if (this.topbar_mode !== this.config.topbarMode) {
           if (this.streamertext) this._box.remove_child(this.streamertext.box);
-          this.streamertext = {
-            "empty": Topbar.empty,
-            "text-only": Topbar.text_only,
-            "count-only": Topbar.count_only,
-            "all-icons": Topbar.all_icons,
+          const modes = {
+            "empty": Topbar.empty, "text-only": Topbar.text_only,
+            "count-only": Topbar.count_only, "all-icons": Topbar.all_icons,
             "icon-only": Topbar.icon_only
-          }[TOPBARMODE]();
+          };
+          this.streamertext = modes[this.config.topbarMode]();
           this._box.add_child(this.streamertext.box);
-          this.topbar_mode = TOPBARMODE;
+          this.topbar_mode = this.config.topbarMode;
       }
 
-      if (this.timer.settings != 0) GLib.source_remove(this.timer.settings);
+      if (this.timer.settings) GLib.source_remove(this.timer.settings);
       this.timer.settings = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
         this.timer.settings = 0;
         this.updateData();
@@ -152,51 +134,22 @@ const ExtensionLayout = GObject.registerClass(
     }
 
     destroy() {
-      if (this.timer.settings != 0) GLib.source_remove(this.timer.settings);
-      if (this.timer.update != 0) GLib.source_remove(this.timer.update);
-      if (this.timer.view != 0) GLib.source_remove(this.timer.view);
+      Object.values(this.timer).forEach(t => t && GLib.source_remove(t));
       this.timer = { view: 0, update: 0, settings: 0 };
-
-      // DISCONNECT the settings changed signal
-      if (this._settingsChangedId) {
-        this.settings.disconnect(this._settingsChangedId);
-        this._settingsChangedId = null;
-      }
+      if (this._settingsChangedId) this.settings.disconnect(this._settingsChangedId);
       super.destroy();
     }
 
-    _openSettings() {
-        Util.spawn([
-            "gnome-extensions", "prefs",
-            this.uuid
-        ]);
-    }
-
-    _execCmd(streamer) {
+    _execCmd(streamer, platform) {
       this.menu.close();
-      let entry = this.online.find(e => e.login === streamer);
-      let cmdTemplate;
-      if (entry && entry.platform === 'kick') {
-        cmdTemplate = KICK_OPENCMD;
-      } else {
-        cmdTemplate = OPENCMD;
-      }
-      let cmd = cmdTemplate.replaceAll('%streamer%', streamer);
-      GLib.spawn_command_line_async(cmd);
+      const template = platform === 'kick' ? this.config.kickOpenCmd : this.config.openCmd;
+      GLib.spawn_command_line_async(template.replaceAll('%streamer%', streamer));
     }
 
-    _findNewStreamerEntries(lastList, currentList, detectGameChange) {
-      detectGameChange = detectGameChange || false;
-      if (lastList.length == 0) return currentList;
-
-      let streamers = new Map();
-      lastList.forEach(({streamer, game}) => streamers.set(streamer, game));
-
-      return currentList.filter(({streamer, game}) => {
-          if (!streamers.has(streamer)) return true;
-          if (detectGameChange && game != streamers.get(streamer)) return true;
-          return false;
-      });
+    _findNewStreamerEntries(lastList, currentList, detectGameChange = false) {
+      if (!lastList.length) return currentList;
+      const cached = new Map(lastList.map(s => [s.streamer, s.game]));
+      return currentList.filter(s => !cached.has(s.streamer) || (detectGameChange && s.game !== cached.get(s.streamer)));
     }
 
     _streamerOnlineNotification(streamer) {
@@ -206,215 +159,145 @@ const ExtensionLayout = GObject.registerClass(
         body: _("Playing %game%").replace(/%game%/, streamer.game)
       });
 
-      notification.addAction(_("Watch!"), () => {
-        let cmdTemplate = streamer.platform === 'kick' ? KICK_OPENCMD : OPENCMD;
-        let cmd = cmdTemplate.replaceAll('%streamer%', streamer.login);
-        GLib.spawn_command_line_async(cmd);
-      });
+      notification.addAction(_("Watch!"), () => this._execCmd(streamer.login, streamer.platform));
 
-      // notification fallback icon → para.svg
-      let icon = NOTIFICATIONS_STREAMER_ICON ?
-        Icons.get_streamericon(streamer.fullId, "notifications-icon") :
-        new St.Icon({
-          gicon: Gio.icon_new_for_string(this.path + "/livestreamer-icons/para.svg"),
-          style_class: "notifications-icon"
-        });
+      let icon = this.config.notifsStreamerIcon 
+        ? Icons.get_streamericon(streamer.fullId, "notifications-icon") 
+        : new St.Icon({ gicon: Gio.icon_new_for_string(`${this.path}/livestreamer-icons/para.svg`), style_class: "notifications-icon" });
+      
       this.notification_source.createIcon = () => icon;
-
       this.notification_source.addNotification(notification);
     }
 
-    _parseStreamers() {
-      const twitch = [];
-      const kick = [];
-      STREAMERS.forEach(s => {
-        s = s.trim();
-        if (!s) return;
-        if (s.startsWith('kick:')) {
-          kick.push(s.substring(5).trim());
-        } else if (s.startsWith('twitch:')) {
-          twitch.push(s.substring(7).trim());
-        } else {
-          twitch.push(s);
-        }
-      });
-      return { twitch, kick };
-    }
-
-    updateData() {
-      if (this.timer.update != 0) GLib.source_remove(this.timer.update);
+    async updateData() {
+      if (this.timer.update) GLib.source_remove(this.timer.update);
       this.updateMenuItem.actor.reactive = false;
       this.updateMenuItem.label.set_text(_("Updating ..."));
-
       this.disable_view_update();
 
-      const { twitch, kick } = this._parseStreamers();
-      let new_online = [];
+      const kickList = this.config.streamers.filter(s => s.startsWith('kick:')).map(s => s.substring(5));
+      const twitchList = this.config.streamers.filter(s => !s.startsWith('kick:')).map(s => s.replace('twitch:', ''));
 
-      const kickPromise = kick.length > 0
-        ? KickProvider.streams(this._httpSession, kick).then(streams => {
-            streams.forEach(s => new_online.push({
-              streamer: s.streamer,
-              login: s.login,
-              game: s.game || 'Kick',
-              viewer_count: s.viewer_count,
-              title: s.title || '',
-              type: 'live',
-              thumbnail_url: s.thumbnail_url,
-              platform: 'kick',
-              started_at: s.started_at || null,
-              fullId: 'kick:' + s.login
-            }));
-          })
-        : Promise.resolve();
+      let newOnline = [];
 
-      const twitchPromise = twitch.length > 0
-        ? TwitchProvider.streams(this._httpSession, twitch).then(streams => {
-            return Games.getFromStreams(this._httpSession, streams).then(games => {
-              streams.forEach(stream => {
-                if (stream.type !== 'live' && HIDEPLAYLISTS) return;
-                const loginName = stream.user_login;
-                const game = games.find(g => g.id === stream.game_id);
-                const gameName = game ? game.name : 'n/a';
-                // uptime computed centrally later
-                new_online.push({
-                  streamer: stream.user_name,
-                  login: loginName,
-                  game: gameName,
-                  viewer_count: stream.viewer_count,
-                  title: stream.title,
-                  type: stream.type,
-                  thumbnail_url: stream.thumbnail_url,
-                  platform: 'twitch',
-                  started_at: stream.started_at,
-                  fullId: 'twitch:' + loginName
-                });
-              });
+      try {
+        const [kickStreams, twitchStreams] = await Promise.all([
+          kickList.length ? KickProvider.streams(this._httpSession, kickList) : [],
+          twitchList.length ? TwitchProvider.streams(this._httpSession, twitchList) : []
+        ]);
+
+        kickStreams.forEach(s => newOnline.push({
+          streamer: s.streamer, login: s.login, game: s.game || 'Kick',
+          viewer_count: s.viewer_count, title: s.title || '', type: 'live',
+          thumbnail_url: s.thumbnail_url, platform: 'kick', started_at: s.started_at,
+          fullId: `kick:${s.login}`
+        }));
+
+        if (twitchStreams.length) {
+          const games = await Games.getFromStreams(this._httpSession, twitchStreams);
+          twitchStreams.forEach(s => {
+            if (s.type !== 'live' && this.config.hidePlaylists) return;
+            const game = games.find(g => g.id === s.game_id);
+            newOnline.push({
+              streamer: s.user_name, login: s.user_login, game: game ? game.name : 'n/a',
+              viewer_count: s.viewer_count, title: s.title, type: s.type,
+              thumbnail_url: s.thumbnail_url, platform: 'twitch', started_at: s.started_at,
+              fullId: `twitch:${s.user_login}`
             });
-          })
-        : Promise.resolve();
-
-      Promise.all([twitchPromise, kickPromise]).then(() => {
-        let titleMaxLen = this.settings.get_int('title-length');
-        new_online.forEach(entry => {
-          const isPlaylist = (entry.platform === 'twitch' && entry.type !== 'live');
-          const hideStatus = HIDESTATUS;
-          const platformIconPath = this.path + '/livestreamer-icons/' + entry.platform + '.svg';
-
-          // Compute uptime centrally for all platforms
-          const uptime = SHOWUPTIME && entry.started_at
-            ? format_uptime((Date.now() - new Date(entry.started_at).getTime()) / 1000)
-            : false;
-
-          const item = new MenuItems.StreamerMenuItem(
-            entry.streamer,
-            entry.login,
-            entry.game,
-            entry.viewer_count,
-            entry.title,
-            isPlaylist,
-            hideStatus,
-            uptime,
-            platformIconPath,
-            entry.fullId,
-            titleMaxLen
-          );
-          item.connect("activate", () => this._execCmd(entry.login));
-          entry.item = item;
-        });
-
-        if (NOTIFICATIONS_ENABLED) {
-          if (!this.firstRun) {
-            this._findNewStreamerEntries(this.online, new_online, NOTIFICATIONS_GAME_CHANGE)
-              .forEach(s => this._streamerOnlineNotification(s));
-          } else {
-            this.firstRun = false;
-          }
+          });
         }
 
-        this.online = new_online;
-        this.streamertext.update(new_online);
+        newOnline.forEach(entry => {
+          const uptime = this.config.showUptime && entry.started_at 
+            ? format_uptime((Date.now() - new Date(entry.started_at).getTime()) / 1000) : false;
 
+          entry.item = new MenuItems.StreamerMenuItem(
+            entry.streamer, entry.login, entry.game, entry.viewer_count, entry.title,
+            (entry.platform === 'twitch' && entry.type !== 'live'), 
+            this.config.hideStatus, uptime, `${this.path}/livestreamer-icons/${entry.platform}.svg`, 
+            entry.fullId, this.config.titleLen
+          );
+          entry.item.connect("activate", () => this._execCmd(entry.login, entry.platform));
+        });
+
+        if (this.config.notifsEnabled) {
+          if (!this.firstRun) {
+            this._findNewStreamerEntries(this.online, newOnline, this.config.notifsGameChange)
+              .forEach(s => this._streamerOnlineNotification(s));
+          }
+          this.firstRun = false;
+        }
+
+        this.online = newOnline;
+        this.streamertext.update(newOnline);
         this.streamersMenu.removeAll();
         this.spacer.actor.hide();
         this.layoutChanged = true;
+        
         if (this.menu.isOpen) this.updateMenuLayout();
 
         this.updateMenuItem.actor.reactive = true;
         this.updateMenuItem.label.set_text(_("Update now"));
         this.enable_view_update();
-        this.visible = !(HIDEEMPTY && this.online.length === 0);
-      }).catch(d => this.errorHandler(d));
+        this.visible = !(this.config.hideEmpty && this.online.length === 0);
 
-      this.timer.update = GLib.timeout_add(GLib.PRIORITY_DEFAULT, INTERVAL, () => {
+      } catch (err) {
+        this.updateMenuItem.actor.reactive = true;
+        this.updateMenuItem.label.set_text(err.error ? `${err.error} (${err.message})` : "Update Failed");
+      }
+
+      this.timer.update = GLib.timeout_add(GLib.PRIORITY_DEFAULT, this.config.interval, () => {
         this.updateData();
         return GLib.SOURCE_REMOVE;
       });
     }
 
-    errorHandler(data) {
-      this.updateMenuItem.actor.reactive = true;
-      this.updateMenuItem.label.set_text(data.error + " (" + data.message + ")");
-    }
-
     updateMenuLayout() {
       this.streamersMenu.removeAll();
-
-      let online = this.online.slice();
-      let sortfunc;
-      if (SORTKEY == 'NAME') {
-        sortfunc = (a,b) => a.streamer.toUpperCase() > b.streamer.toUpperCase() ? 1 : -1;
-      } else if (SORTKEY == 'GAME') {
-        sortfunc = (a,b) => a.game.toUpperCase() > b.game.toUpperCase() ? 1 : -1;
-      } else if (SORTKEY == 'UPTIME') {
-        sortfunc = (a,b) => (a.started_at || 0) < (b.started_at || 0) ? 1 : -1;
-      } else {
-        sortfunc = (a,b) => a.viewer_count < b.viewer_count ? 1 : -1;
-      }
-      online.sort(sortfunc);
-
-      if (online.length === 0) {
+      if (this.online.length === 0) {
         this.streamersMenu.addMenuItem(new MenuItems.NobodyMenuItem(_("Nobody is streaming")));
         this.spacer.actor.hide();
         this.layoutChanged = false;
         return;
       }
 
+      const sorters = {
+        'NAME': (a, b) => a.streamer.localeCompare(b.streamer),
+        'GAME': (a, b) => a.game.localeCompare(b.game),
+        'UPTIME': (a, b) => (b.started_at || 0) - (a.started_at || 0),
+        'COUNT': (a, b) => b.viewer_count - a.viewer_count
+      };
+      
+      let onlineSorted = [...this.online].sort(sorters[this.config.sortKey] || sorters['COUNT']);
       this.spacer.actor.show();
-      // NO more pixel‑perfect alignment – the card layout handles it naturally
-      online.forEach(entry => this.streamersMenu.addMenuItem(entry.item));
-
+      onlineSorted.forEach(entry => this.streamersMenu.addMenuItem(entry.item));
       this.layoutChanged = false;
     }
 
     _onMenuOpened() {
-      if (this.menu.isOpen && this.layoutChanged == true) {
-        this.updateMenuLayout();
-      }
+      if (this.menu.isOpen && this.layoutChanged) this.updateMenuLayout();
     }
 
     disable_view_update() {
-      if (this.timer.view != 0) GLib.source_remove(this.timer.view);
+      if (this.timer.view) GLib.source_remove(this.timer.view);
       this.timer.view = 0;
     }
 
     enable_view_update() {
       this.interval();
-      this.timer.view = GLib.timeout_add(GLib.PRIORITY_DEFAULT, viewUpdateInterval, () => {
+      this.timer.view = GLib.timeout_add(GLib.PRIORITY_DEFAULT, VIEW_UPDATE_INTERVAL, () => {
         this.interval();
         return GLib.SOURCE_CONTINUE;
       });
     }
 
     interval() {
-      let _online = this.online;
-      if (_online.length > 0) {
-        this.icon.set_gicon(Gio.icon_new_for_string(this.path + "/livestreamer-icons/para_on.svg"));
+      const state = this.online.length > 0;
+      this.icon.set_gicon(Gio.icon_new_for_string(`${this.path}/livestreamer-icons/para_${state ? 'on' : 'off'}.svg`));
+      if (state) {
         this.streamertext.interval();
         this.streamertext.box.show();
-      }
-      else {
-        this.icon.set_gicon(Gio.icon_new_for_string(this.path + "/livestreamer-icons/para_off.svg"));
+      } else {
         this.streamertext.box.hide();
       }
       return true;
@@ -422,43 +305,21 @@ const ExtensionLayout = GObject.registerClass(
   }
 );
 
-// ──────────────────────────── helper functions ────────────────────────────
-
-// (max_size_info, get_size_info, apply_size_info are removed – no longer needed)
-
 function format_uptime(seconds) {
-  const hours   = Math.floor(seconds / 3600);
-  const minutes = Math.floor(seconds % 3600 / 60);
-  return [hours, minutes > 9 ? minutes : '0' + minutes].join(':');
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  return `${hours}:${minutes.toString().padStart(2, '0')}`;
 }
 
 export default class TwitchLiveExtension extends Extension {
-  constructor(metadata) {
-    super(metadata);
-  }
-
   enable() {
-    button = new ExtensionLayout(this.path, this.uuid, this.getSettings());
-    Panel.addToStatusArea('parasocial', button, 0);
+    button = new ExtensionLayout(this.path, this.uuid, this.getSettings()); 
+    Main.panel.addToStatusArea('parasocial', button, 0); 
   }
-
   disable() {
     if (button) {
       button.destroy();
       button = null;
     }
-    STREAMERS = [];
-    OPENCMD = "";
-    KICK_OPENCMD = "";
-    INTERVAL = 5*1000*60;
-    HIDEPLAYLISTS = false;
-    NOTIFICATIONS_ENABLED = false;
-    NOTIFICATIONS_GAME_CHANGE = false;
-    NOTIFICATIONS_STREAMER_ICON = false;
-    HIDEEMPTY = false;
-    SORTKEY = 'COUNT';
-    HIDESTATUS = false;
-    SHOWUPTIME = false;
-    TOPBARMODE = 'all-icons';
   }
 }

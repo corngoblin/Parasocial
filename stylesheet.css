@@ -9,14 +9,14 @@
   padding-top: 2px;
 }
 
-/* Dropdown and Panel streamer avatars (halved size) */
+/* Dropdown and Panel streamer avatars 
 .streamer-icon {
   width: 24px;
   height: 24px;
   border-radius: 4px;
 }
 
-/* Panel icons specifically: bring them closer together */
+/* Panel icons */
 .system-status-icon.streamer-icon {
   margin-left: 2px;
   margin-right: 2px;
