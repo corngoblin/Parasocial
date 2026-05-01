@@ -178,6 +178,30 @@ msgstr "Скрывать строку статуса в меню"
 msgid "Show stream uptime"
 msgstr "Показывать время трансляции"
 
+msgid "Show viewer count"
+msgstr "Показывать количество зрителей"
+
+msgid "Show platform icons in menu"
+msgstr "Показывать значки платформ в меню"
+
+msgid "Adjustments"
+msgstr "Настройки"
+
+msgid "Avatar Size (px)"
+msgstr "Размер аватара (px)"
+
+msgid "Platform Icon Size (px)"
+msgstr "Размер значка платформы (px)"
+
+msgid "Menu Spacing (px)"
+msgstr "Отступы в меню (px)"
+
+msgid "Font Size (px)"
+msgstr "Размер шрифта (px)"
+
+msgid "Reset to Defaults"
+msgstr "Сбросить настройки"
+
 msgid "Notifications"
 msgstr "Уведомления"
 

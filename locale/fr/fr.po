@@ -178,6 +178,30 @@ msgstr "Masquer la description dans le menu"
 msgid "Show stream uptime"
 msgstr "Afficher la durée du stream"
 
+msgid "Show viewer count"
+msgstr "Afficher le nombre de spectateurs"
+
+msgid "Show platform icons in menu"
+msgstr "Afficher les icônes de plateforme dans le menu"
+
+msgid "Adjustments"
+msgstr "Ajustements"
+
+msgid "Avatar Size (px)"
+msgstr "Taille de l'avatar (px)"
+
+msgid "Platform Icon Size (px)"
+msgstr "Taille de l'icône de plateforme (px)"
+
+msgid "Menu Spacing (px)"
+msgstr "Espacement du menu (px)"
+
+msgid "Font Size (px)"
+msgstr "Taille de la police (px)"
+
+msgid "Reset to Defaults"
+msgstr "Réinitialiser les valeurs par défaut"
+
 msgid "Notifications"
 msgstr "Notifications"
 

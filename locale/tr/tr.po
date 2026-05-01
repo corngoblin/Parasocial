@@ -178,6 +178,30 @@ msgstr "Menüdeki yayın durum satırını gizle"
 msgid "Show stream uptime"
 msgstr "Yayın süresini göster"
 
+msgid "Show viewer count"
+msgstr "İzleyici sayısını göster"
+
+msgid "Show platform icons in menu"
+msgstr "Menüde platform simgelerini göster"
+
+msgid "Adjustments"
+msgstr "Ayarlar"
+
+msgid "Avatar Size (px)"
+msgstr "Avatar Boyutu (px)"
+
+msgid "Platform Icon Size (px)"
+msgstr "Platform Simge Boyutu (px)"
+
+msgid "Menu Spacing (px)"
+msgstr "Menü Aralığı (px)"
+
+msgid "Font Size (px)"
+msgstr "Yazı Tipi Boyutu (px)"
+
+msgid "Reset to Defaults"
+msgstr "Varsayılanlara Sıfırla"
+
 msgid "Notifications"
 msgstr "Bildirimler"
 

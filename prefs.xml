@@ -10,10 +10,29 @@
     <property name="upper">30</property>
     <property name="step_increment">1</property>
   </object>
-
   <object class="GtkAdjustment" id="Adjust_Title_Length">
     <property name="lower">10</property>
     <property name="upper">200</property>
+    <property name="step_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="Adjust_Avatar_Size">
+    <property name="lower">12</property>
+    <property name="upper">48</property>
+    <property name="step_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="Adjust_Platform_Icon_Size">
+    <property name="lower">12</property>
+    <property name="upper">48</property>
+    <property name="step_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="Adjust_Menu_Spacing">
+    <property name="lower">2</property>
+    <property name="upper">20</property>
+    <property name="step_increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="Adjust_Font_Size">
+    <property name="lower">10</property>
+    <property name="upper">24</property>
     <property name="step_increment">1</property>
   </object>
 
@@ -23,7 +42,6 @@
       <column type="gchararray"/>
     </columns>
   </object>
-
   <object class="GtkListStore" id="TopBarDisplay_ListStore">
     <columns>
       <column type="gchararray"/>
@@ -303,7 +321,6 @@
             </child>
           </object>
         </child>
-        <!-- ========== NEW: Title Length ========== -->
         <child>
           <object class="AdwActionRow">
             <property name="title" translatable="yes">Max Title Length</property>
@@ -315,7 +332,6 @@
             </child>
           </object>
         </child>
-        <!-- ==================================== -->
         <child>
           <object class="AdwSwitchRow" id="field_hideempty">
             <property name="title" translatable="yes">Hide indicator when nobody is live</property>
@@ -334,6 +350,76 @@
         <child>
           <object class="AdwSwitchRow" id="field_showuptime">
             <property name="title" translatable="yes">Show stream uptime</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSwitchRow" id="field_show_viewer_count">
+            <property name="title" translatable="yes">Show viewer count</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSwitchRow" id="field_show_platform_icons">
+            <property name="title" translatable="yes">Show platform icons in menu</property>
+          </object>
+        </child>
+      </object>
+    </child>
+
+    <!-- Adjustments Group -->
+    <child>
+      <object class="AdwPreferencesGroup" id="adjustments_group">
+        <property name="title" translatable="yes">Adjustments</property>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Avatar Size (px)</property>
+            <child type="suffix">
+              <object class="GtkSpinButton" id="field_avatar_size">
+                <property name="valign">center</property>
+                <property name="adjustment">Adjust_Avatar_Size</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Platform Icon Size (px)</property>
+            <child type="suffix">
+              <object class="GtkSpinButton" id="field_platform_icon_size">
+                <property name="valign">center</property>
+                <property name="adjustment">Adjust_Platform_Icon_Size</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Menu Spacing (px)</property>
+            <child type="suffix">
+              <object class="GtkSpinButton" id="field_menu_spacing">
+                <property name="valign">center</property>
+                <property name="adjustment">Adjust_Menu_Spacing</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Font Size (px)</property>
+            <child type="suffix">
+              <object class="GtkSpinButton" id="field_font_size">
+                <property name="valign">center</property>
+                <property name="adjustment">Adjust_Font_Size</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="reset_adjustments">
+            <property name="label" translatable="yes">Reset to Defaults</property>
+            <property name="halign">center</property>
+            <style>
+              <class name="destructive-action"/>
+            </style>
           </object>
         </child>
       </object>

@@ -178,6 +178,30 @@ msgstr "Stream‑Statuszeile im Menü verstecken"
 msgid "Show stream uptime"
 msgstr "Stream‑Laufzeit anzeigen"
 
+msgid "Show viewer count"
+msgstr "Zuschauerzahl anzeigen"
+
+msgid "Show platform icons in menu"
+msgstr "Plattform‑Icons im Menü anzeigen"
+
+msgid "Adjustments"
+msgstr "Anpassungen"
+
+msgid "Avatar Size (px)"
+msgstr "Avatar‑Größe (px)"
+
+msgid "Platform Icon Size (px)"
+msgstr "Plattform‑Icon‑Größe (px)"
+
+msgid "Menu Spacing (px)"
+msgstr "Menüabstand (px)"
+
+msgid "Font Size (px)"
+msgstr "Schriftgröße (px)"
+
+msgid "Reset to Defaults"
+msgstr "Auf Standard zurücksetzen"
+
 msgid "Notifications"
 msgstr "Benachrichtigungen"
 

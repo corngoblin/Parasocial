@@ -110,7 +110,13 @@ const ExtensionLayout = GObject.registerClass(
         hideStatus: this.settings.get_boolean('hidestatus'),
         showUptime: this.settings.get_boolean('showuptime'),
         topbarMode: this.settings.get_string('topbarmode'),
-        titleLen: this.settings.get_int('title-length')
+        titleLen: this.settings.get_int('title-length'),
+        avatarSize: this.settings.get_int('avatar-size'),
+        platformIconSize: this.settings.get_int('platform-icon-size'),
+        menuSpacing: this.settings.get_int('menu-spacing'),
+        fontSize: this.settings.get_int('font-size'),
+        showPlatformIcons: this.settings.get_boolean('show-platform-icons'),
+        showViewerCount: this.settings.get_boolean('show-viewer-count')
       };
 
       if (this.topbar_mode !== this.config.topbarMode) {
@@ -215,7 +221,10 @@ const ExtensionLayout = GObject.registerClass(
             entry.streamer, entry.login, entry.game, entry.viewer_count, entry.title,
             (entry.platform === 'twitch' && entry.type !== 'live'), 
             this.config.hideStatus, uptime, `${this.path}/livestreamer-icons/${entry.platform}.svg`, 
-            entry.fullId, this.config.titleLen
+            entry.fullId, this.config.titleLen,
+            this.config.avatarSize, this.config.platformIconSize, this.config.menuSpacing, this.config.fontSize,
+            this.config.showPlatformIcons,
+            this.config.showViewerCount
           );
           entry.item.connect("activate", () => this._execCmd(entry.login, entry.platform));
         });

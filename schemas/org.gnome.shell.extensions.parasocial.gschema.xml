@@ -26,6 +26,40 @@
       <summary>Max title length in menu</summary>
       <description>Maximum number of characters shown for the stream title in the dropdown menu. Longer titles are truncated with an ellipsis.</description>
     </key>
+    <key type="i" name="avatar-size">
+      <default>20</default>
+      <range min="12" max="48"/>
+      <summary>Avatar size (px)</summary>
+      <description>Size of streamer profile pictures in the dropdown menu.</description>
+    </key>
+    <key type="i" name="platform-icon-size">
+      <default>16</default>
+      <range min="12" max="48"/>
+      <summary>Platform icon size (px)</summary>
+      <description>Height of the Twitch / Kick icons in the dropdown menu.</description>
+    </key>
+    <key type="i" name="menu-spacing">
+      <default>8</default>
+      <range min="2" max="20"/>
+      <summary>Menu spacing (px)</summary>
+      <description>Spacing between elements inside each streamer row.</description>
+    </key>
+    <key type="i" name="font-size">
+      <default>14</default>
+      <range min="10" max="24"/>
+      <summary>Font size (px)</summary>
+      <description>Base font size for the streamer name. Other text scales relative to this.</description>
+    </key>
+    <key type="b" name="show-platform-icons">
+      <default>true</default>
+      <summary>Show platform icons</summary>
+      <description>Show a small Twitch or Kick icon next to the streamer name in the dropdown menu.</description>
+    </key>
+    <key type="b" name="show-viewer-count">
+      <default>true</default>
+      <summary>Show viewer count</summary>
+      <description>Show the viewer count in the dropdown menu.</description>
+    </key>
     <key type="b" name="notifications-enabled">
       <default>false</default>
       <summary>Show streamer notifications</summary>
