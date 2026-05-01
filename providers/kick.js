@@ -22,7 +22,17 @@ function fetchKickStream(session, name) {
         if (!ls) return resolve(null);
 
         const cat = ls.categories?.[0];
-        const started_at = ls.created_at || null; // FIXED: Kick uses created_at
+
+        // ---------- UTC TIME ----------
+        let rawTime = ls.created_at;
+        if (rawTime) {
+          // Check if it already has a timezone designator (Z, +, or a hyphen at position 10+)
+          if (!rawTime.endsWith('Z') && !rawTime.includes('+') && !rawTime.includes('-', 10)) {
+            rawTime += 'Z';
+          }
+        }
+        const started_at = rawTime || null;
+        // ----------------------------------
 
         resolve({
           streamer: data.user?.username || name, // FIXED: User is at the root level
