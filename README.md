@@ -19,7 +19,25 @@ Reason for the fork: Maweki seems busy or uninterested in continuing development
 - **Sorting options** – sort the menu by viewer count, name, game, or uptime.
 - **Hide features** – skip playlist streams (reruns), hide the panel when nobody is streaming, or hide the status line.
 - **Fewer Dependencies** - No longer requires Curl or Mogrify. Instead, it uses GdkPixbuf and Soup, which are already utilized by GNOME.
+
 ---
+
+## Screenshots
+<table align="center">
+  <tr>
+    <td>
+      <img width="304" height="444" alt="img1" src="https://github.com/user-attachments/assets/56b68ad9-7524-4d50-82d6-ade87cb405f0" />
+    </td>
+    <td>
+      <img width="300" height="441" alt="img3" src="https://github.com/user-attachments/assets/35cac6c6-472b-4cce-a6c9-2b26e416e749" />
+    </td>
+  </tr>
+</table>
+
+<p align="center">
+  <img width="263" height="424" alt="img2" src="https://github.com/user-attachments/assets/e180933c-8ccb-44ef-be2e-1ec7d6f8452e" />
+</p>
+
 
 
 ## Want to Help?
