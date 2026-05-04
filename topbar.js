@@ -19,10 +19,11 @@ export const text_only = () => {
 
 export const icon_only = () => {
   const icon = new St.Icon({ style_class: 'streamer-icon system-status-icon', visible: false });
+  let rotation = 0, online = [];
+  
   const box = new St.BoxLayout();
   box.add_child(icon);
   
-  let rotation = 0, online = [];
   return {
     box,
     update: (data) => {
@@ -30,11 +31,9 @@ export const icon_only = () => {
       if (!online.length) icon.visible = false;
     },
     interval() {
-      icon.visible = online.length > 0;
-      if (!online.length) return;
-      const streamer = online[rotation % online.length];
-      rotation = (rotation + 1) % online.length;
-      icon.gicon = Gio.icon_new_for_string(Icons.get_final_icon_path(streamer.fullId));
+      if (!online.length) return (icon.visible = false);
+      icon.visible = true;
+      icon.gicon = Gio.icon_new_for_string(Icons.get_final_icon_path(online[rotation++ % online.length].fullId));
     }
   };
 };
