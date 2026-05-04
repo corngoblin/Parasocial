@@ -1,0 +1,239 @@
+# Turkish translations for Parasocial GNOME Shell Extension
+# Copyright (C) 2026 corngoblin
+# This file is distributed under the same license as the Parasocial extension.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: parasocial 50\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-02 00:00-0400\n\n"
+"PO-Revision-Date: 2026-05-02 00:00-0400\n\n"
+"Last-Translator: corngoblin <corngoblin@github.io>\n"
+"Language-Team: Turkish\n"
+"Language: tr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Settings"
+msgstr "Ayarlar"
+
+msgid "Update now"
+msgstr "Şimdi güncelle"
+
+msgid "Updating ..."
+msgstr "Güncelleniyor..."
+
+msgid "Nobody is streaming"
+msgstr "Kimse canlı yayında değil"
+
+msgid "Parasocial"
+msgstr "Parasocial"
+
+msgid "%streamer% is live!"
+msgstr "%streamer% canlı yayında!"
+
+msgid "Playing %game%"
+msgstr "%game% oynuyor"
+
+msgid "Watch!"
+msgstr "İzle!"
+
+msgid "Only indicator"
+msgstr "Yalnızca gösterge"
+
+msgid "Streamers names"
+msgstr "Yayıncı adları"
+
+msgid "Number of live streams"
+msgstr "Canlı yayın sayısı"
+
+msgid "Streamers icons"
+msgstr "Yayıncı simgeleri"
+
+msgid "Streamers icons (all)"
+msgstr "Yayıncı simgeleri (tümü)"
+
+msgid "Streamer name"
+msgstr "Yayıncı adı"
+
+msgid "Game title"
+msgstr "Oyun adı"
+
+msgid "Viewers count"
+msgstr "İzleyici sayısı"
+
+msgid "Stream uptime"
+msgstr "Yayın süresi"
+
+msgid "Cancel"
+msgstr "İptal"
+
+msgid "Add"
+msgstr "Ekle"
+
+msgid "Add Twitch Streamer"
+msgstr "Twitch yayıncısı ekle"
+
+msgid "Enter Twitch username"
+msgstr "Twitch kullanıcı adını girin"
+
+msgid "Add Kick Streamer"
+msgstr "Kick yayıncısı ekle"
+
+msgid "Enter Kick username"
+msgstr "Kick kullanıcı adını girin"
+
+msgid "Add YouTube Streamer"
+msgstr "YouTube yayıncısı ekle"
+
+msgid "Enter the YouTube channel handle (without @)."
+msgstr "YouTube kanal tanıtıcısını girin (@ olmadan)."
+
+msgid "Import Twitch Follows"
+msgstr "Twitch takiplerini içe aktar"
+
+msgid "Importing..."
+msgstr "İçe aktarılıyor..."
+
+msgid "Import from Twitch"
+msgstr "Twitch'ten içe aktar"
+
+msgid "Import"
+msgstr "İçe aktar"
+
+msgid "Enter your Twitch account username to import your follows."
+msgstr "Takip ettiklerinizi içe aktarmak için Twitch kullanıcı adınızı girin."
+
+msgid "Enter the exact Twitch username."
+msgstr "Tam Twitch kullanıcı adını girin."
+
+msgid "Enter the exact Kick username."
+msgstr "Tam Kick kullanıcı adını girin."
+
+msgid "Streamers"
+msgstr "Yayıncılar"
+
+msgid "Your Streamers"
+msgstr "Yayıncılarınız"
+
+msgid "Streamers you are actively monitoring."
+msgstr "Takip ettiğiniz yayıncılar."
+
+msgid "Manage"
+msgstr "Yönet"
+
+msgid "Remove Selected Streamer"
+msgstr "Seçili yayıncıyı kaldır"
+
+msgid "Clear All Streamers"
+msgstr "Tüm yayıncıları temizle"
+
+msgid "Integrations &amp; Assets"
+msgstr "Entegrasyonlar ve Varlıklar"
+
+msgid "Twitch OAuth Authentication"
+msgstr "Twitch OAuth Kimlik Doğrulaması"
+
+msgid "Required for retrieving detailed Twitch data and using import function."
+msgstr "Ayrıntılı Twitch verileri almak ve içe aktarma işlevini kullanmak için gereklidir."
+
+msgid "Authenticate"
+msgstr "Kimlik Doğrula"
+
+msgid "Pull all channels you currently follow on Twitch. (Case Sensitive)"
+msgstr "Twitch'te takip ettiğiniz tüm kanalları getir. (Büyük/küçük harfe duyarlı)"
+
+msgid "Refresh Profile Images"
+msgstr "Profil resimlerini yenile"
+
+msgid "Manually fetch missing or updated profile pictures."
+msgstr "Eksik veya güncellenmiş profil resimlerini elle getir."
+
+msgid "Panel"
+msgstr "Panel"
+
+msgid "Appearance"
+msgstr "Görünüm"
+
+msgid "Indicator Style"
+msgstr "Gösterge Stili"
+
+msgid "Sort Menu By"
+msgstr "Menü Sıralama"
+
+msgid "Behavior"
+msgstr "Davranış"
+
+msgid "Update Interval (minutes)"
+msgstr "Güncelleme Aralığı (dakika)"
+
+msgid "Max Title Length"
+msgstr "Maksimum Başlık Uzunluğu"
+
+msgid "Hide indicator when nobody is live"
+msgstr "Kimse canlı yayında değilse göstergeyi gizle"
+
+msgid "Hide playlist and rerun streams"
+msgstr "Oynatma listesi ve tekrar yayınlarını gizle"
+
+msgid "Hide stream status line in menu"
+msgstr "Menüdeki yayın durum satırını gizle"
+
+msgid "Show stream uptime"
+msgstr "Yayın süresini göster"
+
+msgid "Show viewer count"
+msgstr "İzleyici sayısını göster"
+
+msgid "Show platform icons in menu"
+msgstr "Menüde platform simgelerini göster"
+
+msgid "Adjustments"
+msgstr "Ayarlar"
+
+msgid "Avatar Size (px)"
+msgstr "Avatar Boyutu (px)"
+
+msgid "Platform Icon Size (px)"
+msgstr "Platform Simge Boyutu (px)"
+
+msgid "Menu Spacing (px)"
+msgstr "Menü Aralığı (px)"
+
+msgid "Font Size (px)"
+msgstr "Yazı Tipi Boyutu (px)"
+
+msgid "Reset to Defaults"
+msgstr "Varsayılanlara Sıfırla"
+
+msgid "Notifications"
+msgstr "Bildirimler"
+
+msgid "Enable Notifications"
+msgstr "Bildirimleri Etkinleştir"
+
+msgid "Notify on game change"
+msgstr "Oyun değiştiğinde bildir"
+
+msgid "Show streamer icon on notifications"
+msgstr "Bildirimlerde yayıncı simgesini göster"
+
+msgid "Commands"
+msgstr "Komutlar"
+
+msgid "Launch Commands"
+msgstr "Başlatma Komutları"
+
+msgid "These commands run when you click a live streamer. Use %streamer% as a placeholder for the username."
+msgstr "Bu komutlar, bir canlı yayıncıya tıkladığınızda çalıştırılır. Kullanıcı adı yerine %streamer% yazın."
+
+msgid "Twitch Command"
+msgstr "Twitch Komutu"
+
+msgid "Kick Command"
+msgstr "Kick Komutu"
+
+msgid "YouTube Command"
+msgstr "YouTube Komutu"
