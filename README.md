@@ -1,7 +1,7 @@
 # Parasocial – GNOME Shell Extension
 
-**Parasocial** is a GNOME Shell extension that shows a panel indicator when your favorite streamers are live on **Twitch** and **Kick**.  
-Click the panel to open a dropdown menu with live streamers, viewer counts, game titles, and stream titles.  
+**Parasocial** is a GNOME Shell extension that shows a panel indicator when your favorite streamers are live on **Twitch**, **Kick**, and **YouTube**.
+Click the panel to open a dropdown menu with live streamers, viewer counts, game titles, and stream titles.
 You can launch the stream with a custom command – streamlink, your browser, or any other program.
 
 It is a fork of the original [TwitchLive Panel](https://github.com/maweki/twitchlive-extension) by Maweki.
@@ -12,17 +12,18 @@ Reason for the fork: Maweki seems busy or uninterested in continuing development
 
 ## Features
 
-- **Twitch & Kick support** – monitor streamers from both platforms side‑by‑side.
-- **Import from Twitch user** – authenticate with your Twitch account to import all your followed channels.
-- **Notifications** – optional notifications when a streamer goes live or changes game.
-- **Panel display modes** – show only the indicator icon, cycle through streamer names, icons, or a live count.
-- **Sorting options** – sort the menu by viewer count, name, game, or uptime.
-- **Hide features** – skip playlist streams (reruns), hide the panel when nobody is streaming, or hide the status line.
-- **Fewer Dependencies** - No longer requires Curl or Mogrify. Instead, it uses GdkPixbuf and Soup, which are already utilized by GNOME.
+* **Twitch, Kick & YouTube support** – monitor streamers from all three platforms side-by-side.
+* **Import from Twitch user** – authenticate with your Twitch account to import all your followed channels.
+* **Notifications** – optional notifications when a streamer goes live or changes game/title.
+* **Panel display modes** – show only the indicator icon, cycle through streamer names, icons, or a live count.
+* **Sorting options** – sort the menu by viewer count, name, game, or uptime.
+* **Hide features** – skip playlist streams (reruns), hide the panel when nobody is streaming, or hide the status line.
+* **Fewer Dependencies** - No longer requires Curl or Mogrify. Instead, it uses GdkPixbuf and Soup, which are already utilized by GNOME.
 
 ---
 
 ## Screenshots
+
 <table align="center">
   <tr>
     <td>
@@ -38,22 +39,24 @@ Reason for the fork: Maweki seems busy or uninterested in continuing development
   <img width="263" height="424" alt="img2" src="https://github.com/user-attachments/assets/e180933c-8ccb-44ef-be2e-1ec7d6f8452e" />
 </p>
 
-
+---
 
 ## Want to Help?
 
-- **Improve Icons**: The current icons are...okay... please create and submit new icons if you have time. 
-- **Translations**: If you notice poor translations or have a new language to contribute, please submit corrections or new translations. The current ones are done with AI.
+* **Improve Icons**: The current icons are...okay... please create and submit new icons if you have time.
+* **Translations**: If you notice poor translations or have a new language to contribute, please submit corrections or new translations. The current ones are done with AI.
 
----  
+---
 
 # Copyright & License
-- License - GPL 3.0
-- The Twitch and Kick logos used in this extension are trademarks of Twitch Interactive, Inc. and Kick Streaming Pty Ltd., respectively.
-- They are used here solely to identify the corresponding platforms.
-- This project is not affiliated with, endorsed by, or sponsored by Twitch or Kick.
-- No copyright or trademark infringement is intended.
+
+* License - GPL 3.0
+* The Twitch, Kick, and YouTube logos used in this extension are trademarks of their respective owners.
+* They are used here solely to identify the corresponding platforms.
+* This project is not affiliated with, endorsed by, or sponsored by Twitch, Kick, or YouTube.
+* No copyright or trademark infringement is intended.
 
 # To-do
-- Maybe add youtube support?
-- Fix the icons
+
+* Improve YouTube stream detection reliability (edge cases like premieres, scheduled streams, etc.)
+* Fix the icons
