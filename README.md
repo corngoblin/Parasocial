@@ -58,5 +58,4 @@ Reason for the fork: Maweki seems busy or uninterested in continuing development
 
 # To-do
 
-* Improve YouTube stream detection reliability (edge cases like premieres, scheduled streams, etc.)
 * Fix the icons
