@@ -159,19 +159,25 @@ const ExtensionLayout = GObject.registerClass(
     }
 
     _streamerOnlineNotification(streamer) {
-      let notification = new MessageTray.Notification({
+      const title = _("%streamer% is live!").replace(/%streamer%/, streamer.streamer);
+      const body = _("Playing %game%").replace(/%game%/, streamer.game);
+
+      // Use streamer icon if it exists, otherwise fall back to default extension icon
+      let gicon;
+      if (this.config.notifsStreamerIcon && Icons.has_icon(streamer.fullId)) {
+        gicon = Gio.icon_new_for_string(Icons.get_final_icon_path(streamer.fullId));
+      } else {
+        gicon = Gio.icon_new_for_string(`${this.path}/livestreamer-icons/para.svg`);
+      }
+
+      const notification = new MessageTray.Notification({
         source: this.notification_source,
-        title: _("%streamer% is live!").replace(/%streamer%/, streamer.streamer),
-        body: _("Playing %game%").replace(/%game%/, streamer.game)
+        title,
+        body,
+        gicon
       });
 
       notification.addAction(_("Watch!"), () => this._execCmd(streamer.login, streamer.platform));
-
-      let icon = this.config.notifsStreamerIcon 
-        ? Icons.get_streamericon(streamer.fullId, "notifications-icon") 
-        : new St.Icon({ gicon: Gio.icon_new_for_string(`${this.path}/livestreamer-icons/para.svg`), style_class: "notifications-icon" });
-      
-      this.notification_source.createIcon = () => icon;
       this.notification_source.addNotification(notification);
     }
 
