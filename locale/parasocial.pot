@@ -1,15 +1,13 @@
-# Parasocial GNOME Shell Extension
-# Copyright (C) 2025 corngoblin
+# Copyright (C) 2026 corngoblin
 # This file is distributed under the same license as the Parasocial extension.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: parasocial 1.2\n"
+"Project-Id-Version: parasocial 50\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-30 00:00+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2026-05-02 00:00-0400\n\n"
+"PO-Revision-Date: 2026-05-02 00:00-0400\n\n"
+"Last-Translator: corngoblin <corngoblin@github.io>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -83,6 +81,12 @@ msgid "Add Kick Streamer"
 msgstr ""
 
 msgid "Enter Kick username"
+msgstr ""
+
+msgid "Add YouTube Streamer"
+msgstr ""
+
+msgid "Enter the YouTube channel handle (without @)."
 msgstr ""
 
 msgid "Import Twitch Follows"
@@ -227,4 +231,7 @@ msgid "Twitch Command"
 msgstr ""
 
 msgid "Kick Command"
+msgstr ""
+
+msgid "YouTube Command"
 msgstr ""
