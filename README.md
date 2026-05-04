@@ -55,5 +55,5 @@ Reason for the fork: Maweki seems busy or uninterested in continuing development
 - No copyright or trademark infringement is intended.
 
 # To-do
-- Maybe add youtube support?
+- finish up youtube support
 - Fix the icons
