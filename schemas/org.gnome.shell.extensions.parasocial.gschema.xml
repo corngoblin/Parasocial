@@ -3,7 +3,7 @@
     <key name="streamers" type="s">
       <default>''</default>
       <summary>Streamers, comma separated</summary>
-      <description>A comma separated list of account names to follow. Prefix with kick: for Kick streamers.</description>
+      <description>A comma separated list of account names to follow. Prefix with kick: for Kick streamers, youtube: for YouTube streamers.</description>
     </key>
     <key name="opencmd" type="s">
       <default>'xdg-open http://twitch.tv/%streamer%'</default>
@@ -15,6 +15,12 @@
       <summary>Command to open Kick streams</summary>
       <description>The command executed when clicking on a Kick streamer (use %streamer% for the login name).</description>
     </key>
+    <key name="youtube-opencmd" type="s">
+      <default>'xdg-open https://www.youtube.com/@%streamer%'</default>
+      <summary>Command to open YouTube streams</summary>
+      <description>The command executed when clicking on a YouTube streamer (use %streamer% for the channel handle).</description>
+    </key>
+    <!-- remaining keys unchanged -->
     <key type="i" name="interval">
       <default>5</default>
       <summary>The interval between updates in minutes</summary>
