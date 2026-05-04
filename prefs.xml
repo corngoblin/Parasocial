@@ -102,6 +102,23 @@
     <property name="close-response">cancel</property>
   </object>
 
+  <!-- Add YouTube streamer -->
+  <object class="AdwMessageDialog" id="YoutubeStreamerDialog">
+    <property name="heading" translatable="yes">Add YouTube Streamer</property>
+    <property name="body" translatable="yes">Enter the YouTube channel handle (without @).</property>
+    <property name="extra-child">
+      <object class="GtkEntry" id="YoutubeStreamerDialog-entry">
+        <property name="activates-default">True</property>
+      </object>
+    </property>
+    <responses>
+      <response id="cancel" translatable="yes">Cancel</response>
+      <response id="ok" translatable="yes" appearance="suggested">Add</response>
+    </responses>
+    <property name="default-response">ok</property>
+    <property name="close-response">cancel</property>
+  </object>
+
   <!-- ============ Page: Streamers ============ -->
 
   <object class="AdwPreferencesPage" id="streamers_page">
@@ -159,6 +176,22 @@
             <property name="activatable-widget">add_kick_streamer</property>
             <child type="suffix">
               <object class="GtkButton" id="add_kick_streamer">
+                <property name="icon-name">list-add-symbolic</property>
+                <property name="valign">center</property>
+                <style>
+                  <class name="suggested-action"/>
+                  <class name="circular"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Add YouTube Streamer</property>
+            <property name="activatable-widget">add_youtube_streamer</property>
+            <child type="suffix">
+              <object class="GtkButton" id="add_youtube_streamer">
                 <property name="icon-name">list-add-symbolic</property>
                 <property name="valign">center</property>
                 <style>
@@ -466,6 +499,11 @@
         <child>
           <object class="AdwEntryRow" id="field_kickopencmd">
             <property name="title" translatable="yes">Kick Command</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwEntryRow" id="field_youtubeopencmd">
+            <property name="title" translatable="yes">YouTube Command</property>
           </object>
         </child>
       </object>
