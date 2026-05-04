@@ -25,13 +25,11 @@ export function trigger_download_by_url(streamername, imageurl) {
         const stream = Gio.MemoryInputStream.new_from_bytes(GLib.Bytes.new(bytes));
         const pixbuf = GdkPixbuf.Pixbuf.new_from_stream(stream, null);
         
-        if (pixbuf) {
-          pixbuf.savev(finalPath, 'png', [], []);
-          resolve(true);
-        } else {
-          resolve(false);
-        }
-      } catch (e) {
+        if (!pixbuf) return resolve(false);
+        
+        pixbuf.savev(finalPath, 'png', [], []);
+        resolve(true);
+      } catch {
         resolve(false);
       }
     });
@@ -45,28 +43,49 @@ export function get_streamericon(streamername, style_class) {
   });
 }
 
-export function refresh_all_icons(session, streamers, fetchTwitchUsers, fetchKickProfilePicUrl) {
-  const dir = Gio.File.new_for_path(ICONS_PATH);
-  if (!dir.query_exists(null)) {
-    GLib.mkdir_with_parents(ICONS_PATH, 448);
-  }
+export function _fetchYoutubeProfilePicUrl(session, channelHandle) {
+  return new Promise((resolve) => {
+    const url = `https://www.youtube.com/@${encodeURIComponent(channelHandle)}/about`;
+    const msg = Soup.Message.new('GET', url);
+    msg.request_headers.append('User-Agent', 'Parasocial/1.0');
+    msg.request_headers.append('Accept-Language', 'en-US,en;q=0.9');
 
-  // The logic now maps through streamers and only fetches if the icon is missing[cite: 3]
+    session.send_and_read_async(msg, GLib.PRIORITY_DEFAULT, null, (s, r) => {
+      try {
+        const bytes = s.send_and_read_finish(r).get_data();
+        if (!bytes) return resolve(null);
+        
+        const html = new TextDecoder().decode(bytes);
+        const match = html.match(/"avatar":{"thumbnails":\[{"url":"(.+?)"/);
+        const fallback = html.match(/<meta property="og:image" content="(.+?)"/);
+        
+        resolve(match?.[1] || fallback?.[1] || null);
+      } catch {
+        resolve(null);
+      }
+    });
+  });
+}
+
+export function refresh_all_icons(session, streamers, fetchTwitchUsers, fetchKickProfilePicUrl, fetchYoutubeProfilePicUrl) {
+  const dir = Gio.File.new_for_path(ICONS_PATH);
+  if (!dir.query_exists(null)) GLib.mkdir_with_parents(ICONS_PATH, 448);
+
   Promise.all(streamers.map(async (fullName) => {
     try {
-      // Check if icon exists BEFORE doing any network work[cite: 3]
-      if (has_icon(fullName)) return; 
+      if (has_icon(fullName)) return;
 
+      let picUrl = null;
       if (fullName.startsWith('kick:')) {
-        const picUrl = await fetchKickProfilePicUrl(session, fullName.substring(5));
-        if (picUrl) await trigger_download_by_url(fullName, picUrl);
+        picUrl = await fetchKickProfilePicUrl(session, fullName.substring(5));
+      } else if (fullName.startsWith('youtube:')) {
+        picUrl = await fetchYoutubeProfilePicUrl(session, fullName.substring(8));
       } else {
-        const name = fullName.replace('twitch:', '');
-        const data = await fetchTwitchUsers(session, [name]);
-        if (data?.[0]?.profile_image_url) {
-          await trigger_download_by_url(fullName, data[0].profile_image_url);
-        }
+        const data = await fetchTwitchUsers(session, [fullName.replace('twitch:', '')]);
+        picUrl = data?.[0]?.profile_image_url;
       }
+
+      if (picUrl) await trigger_download_by_url(fullName, picUrl);
     } catch (e) { /* Ignore individual fetch failures */ }
   })).catch(() => {});
 }
