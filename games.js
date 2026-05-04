@@ -1,7 +1,11 @@
 import * as Api from './providers/twitch.js';   
+
 const GAMES_CACHE = {};
 
-async function get(session, gameIds) {
+export async function getFromStreams(session, streams) {
+    if (!Array.isArray(streams)) return [];
+    
+    const gameIds = [...new Set(streams.map(s => s.game_id).filter(id => id > 0))];
     if (!gameIds.length) return [];
 
     const uncachedIds = gameIds.filter(id => !GAMES_CACHE[id]);
@@ -9,17 +13,14 @@ async function get(session, gameIds) {
     if (uncachedIds.length > 0) {
         try {
             const data = await Api.games(session, uncachedIds);
-            data.forEach(game => GAMES_CACHE[game.id] = game);
+            if (Array.isArray(data)) {
+                data.forEach(game => GAMES_CACHE[game.id] = game);
+            }
         } catch (error) {
-            log(`TwitchLive: games fetch error: ${error}`);
-            throw error;
+            console.error(`[Parasocial] Games fetch error:`, error);
+            // We log but don't throw, allowing the panel to survive API outages
         }
     }
     
     return gameIds.map(id => GAMES_CACHE[id]).filter(Boolean);
-}
-
-export async function getFromStreams(session, streams) {
-    const gameIds = [...new Set(streams.map(s => s.game_id).filter(id => id > 0))];
-    return get(session, gameIds);
 }
