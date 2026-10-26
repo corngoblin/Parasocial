@@ -42,10 +42,6 @@ Reason for the fork: Maweki seems busy or uninterested in continuing development
 
 ## Installation
 
-### From extensions.gnome.org
-
-Search for **Parasocial** on [extensions.gnome.org](https://extensions.gnome.org/)
-and switch it on with the toggle.
 
 ### From a GitHub release (manual)
 
