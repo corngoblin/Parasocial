@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build the ZIP without publishing a release
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Package and publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the tagged commit
+        uses: actions/checkout@v7
+
+      - name: Check the tag against metadata.json
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          VERSION_NAME="$(python3 -c 'import json;print(json.load(open("metadata.json"))["version-name"])')"
+          if [[ "${TAG_NAME}" != "v${VERSION_NAME}" ]]; then
+            echo "Tag ${TAG_NAME} does not match metadata.json version-name ${VERSION_NAME}." >&2
+            echo "Bump version-name and re-tag, or retag as v${VERSION_NAME}." >&2
+            exit 1
+          fi
+
+      - name: Package the extension
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq zip unzip libglib2.0-bin
+          scripts/package.sh
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: extension-zip
+          path: dist/target/*.shell-extension.zip
+          if-no-files-found: error
+
+      - name: Publish the GitHub release
+        if: startsWith(github.ref, 'refs/tags/') && inputs.dry_run != true
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Parasocial ${{ github.ref_name }}
+          files: dist/target/*.shell-extension.zip
+          generate_release_notes: true
+          fail_on_unmatched_files: true

@@ -40,6 +40,48 @@ Reason for the fork: Maweki seems busy or uninterested in continuing development
 
 
 
+## Installation
+
+### From extensions.gnome.org
+
+Search for **Parasocial** on [extensions.gnome.org](https://extensions.gnome.org/)
+and switch it on with the toggle.
+
+### From a GitHub release (manual)
+
+Download `Parasocial@corngoblin.github.io.shell-extension.zip` from the
+[latest release](https://github.com/corngoblin/Parasocial/releases/latest), then:
+
+```sh
+gnome-extensions install --force Parasocial@corngoblin.github.io.shell-extension.zip
+```
+
+Log out and back in (GNOME Shell only scans the extension directory at startup),
+then enable it:
+
+```sh
+gnome-extensions enable Parasocial@corngoblin.github.io
+```
+
+Do not unzip the archive by hand and copy the folder: the extraction tool names
+the directory after the file (`.shell-extension/`), which is not the UUID, so
+the Shell never lists it. `gnome-extensions install` also compiles the GSettings
+schema, which a hand-copied tree would be missing.
+
+## Building a release
+
+```sh
+scripts/package.sh
+```
+
+writes `dist/target/Parasocial@corngoblin.github.io.shell-extension.zip` — a
+bundle with everything at the archive root, the GSettings XML (uncompiled, as
+extensions.gnome.org requires) and compiled translations only. Pushing a
+`v*` tag runs `.github/workflows/release.yml`, which packages the same ZIP from
+that commit and attaches it to the GitHub release.
+
+
+
 ## Want to Help?
 
 - **Improve Icons**: The current icons are...okay... please create and submit new icons if you have time. 
