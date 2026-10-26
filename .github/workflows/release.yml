@@ -48,11 +48,48 @@ jobs:
           scripts/package.sh
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: extension-zip
           path: dist/target/*.shell-extension.zip
           if-no-files-found: error
+
+      - name: Prepare release notes
+        if: startsWith(github.ref, 'refs/tags/') && inputs.dry_run != true
+        run: |
+          set -euo pipefail
+          ZIP="$(ls dist/target/*.shell-extension.zip)"
+          NAME="$(basename "$ZIP")"
+          SHELL_VERSIONS="$(python3 -c 'import json;print(", ".join(json.load(open("metadata.json"))["shell-version"]))')"
+          {
+            cat <<'BODY'
+          ## Install
+
+          Download the ZIP below, then from a terminal in your download folder:
+
+          ```sh
+          gnome-extensions install --force Parasocial@corngoblin.github.io.shell-extension.zip
+          ```
+
+          Log out and back in (GNOME Shell only scans the extension directory at
+          startup), then enable it:
+
+          ```sh
+          gnome-extensions enable Parasocial@corngoblin.github.io
+          ```
+
+          Install with `gnome-extensions install` rather than extracting the archive
+          by hand: an extraction tool names the folder after the file instead of the
+          extension UUID, and a hand-copied tree has no compiled GSettings schema.
+
+          BODY
+            printf '| | |\n|---|---|\n'
+            printf '| File | %s |\n' "$NAME"
+            printf '| Size | %s bytes |\n' "$(stat -c %s "$ZIP")"
+            printf '| SHA-256 | %s |\n' "$(sha256sum "$ZIP" | cut -d' ' -f1)"
+            printf '| Shell versions | %s |\n' "$SHELL_VERSIONS"
+            printf '\n---\n\n'
+          } > "$RUNNER_TEMP/release-body.md"
 
       - name: Publish the GitHub release
         if: startsWith(github.ref, 'refs/tags/') && inputs.dry_run != true
@@ -60,6 +97,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Parasocial ${{ github.ref_name }}
+          body_path: ${{ runner.temp }}/release-body.md
           files: dist/target/*.shell-extension.zip
           generate_release_notes: true
           fail_on_unmatched_files: true
