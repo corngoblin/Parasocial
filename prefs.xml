@@ -206,7 +206,7 @@
 
     <child>
       <object class="AdwPreferencesGroup" id="twitch_import_group">
-        <property name="title" translatable="yes">Integrations &amp; Assets</property>
+        <property name="title" translatable="yes">Integrations and Assets</property>
         <child>
           <object class="AdwActionRow">
             <property name="title" translatable="yes">Twitch OAuth Authentication</property>

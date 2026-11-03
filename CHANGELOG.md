@@ -3,6 +3,14 @@
 All notable changes to Parasocial are documented here. Releases are tagged
 `v<version-name>` and carry the installable ZIP as their only asset.
 
+## 1.2.1 — 2026-11-03
+
+- Preferences: the "Integrations & Assets" section heading never rendered.
+  libadwaita sets `AdwPreferencesGroup` titles as markup, so the raw `&` failed
+  to parse, the label kept its empty text and every prefs open logged
+  `Failed to set text ... from markup`. The group is now titled "Integrations
+  and Assets".
+
 ## 1.2 — 2026-11-03
 
 GNOME Shell 51 support, plus the code changes needed to stay within the
