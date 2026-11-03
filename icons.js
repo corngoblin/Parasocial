@@ -38,13 +38,6 @@ export function trigger_download_by_url(streamername, imageurl) {
   });
 }
 
-export function get_streamericon(streamername, style_class) {
-  return new imports.gi.St.Icon({
-    gicon: Gio.icon_new_for_string(get_final_icon_path(streamername)),
-    style_class: style_class
-  });
-}
-
 export function refresh_all_icons(session, streamers, fetchTwitchUsers, fetchKickProfilePicUrl) {
   const dir = Gio.File.new_for_path(ICONS_PATH);
   if (!dir.query_exists(null)) {

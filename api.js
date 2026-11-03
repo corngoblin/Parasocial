@@ -14,15 +14,22 @@ const oauth_token_path = GLib.get_user_cache_dir() + '/parasocial-extension/oaut
 
 export function trigger_oauth(extension_path) {
   const url = "https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=" + client_id + "&redirect_uri=http://localhost:8877&scope=user%3Aread%3Afollows";
-  const oauth_receiver = extension_path + "/oauth_receive.py";
+  const oauth_receiver = GLib.build_filenamev([extension_path, 'oauth_receive.js']);
 
-  let [success, pid] = GLib.spawn_async(
-    null,
-    ["python3", oauth_receiver, oauth_token_path],
-    null,
-    GLib.SpawnFlags.SEARCH_PATH,
-    null
-  );
+  // The receiver is a GJS script: gjs is always present on a GNOME desktop, so
+  // this needs no interpreter from PATH beyond the one the Shell itself needs.
+  let success = false;
+  try {
+    [success] = GLib.spawn_async(
+      null,
+      ['gjs', '-m', oauth_receiver, oauth_token_path],
+      null,
+      GLib.SpawnFlags.SEARCH_PATH,
+      null
+    );
+  } catch (e) {
+    log(`Parasocial: failed to start the OAuth receiver: ${e.message}`);
+  }
 
   if (!success) {
     log("Parasocial: Failed to launch OAuth receiver script.");
@@ -30,7 +37,7 @@ export function trigger_oauth(extension_path) {
   }
 
   GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
-    GLib.spawn_command_line_async("xdg-open " + url);
+    Gio.AppInfo.launch_default_for_uri(url, null);
     return GLib.SOURCE_REMOVE;
   });
 }

@@ -36,10 +36,11 @@ FILES=(
     stylesheet.css
     api.js
     icons.js
+    shell_icons.js
     games.js
     menu_items.js
     topbar.js
-    oauth_receive.py
+    oauth_receive.js
     LICENSE.md
 )
 DIRS=(providers livestreamer-icons)

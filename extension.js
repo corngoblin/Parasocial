@@ -86,13 +86,15 @@ const ExtensionLayout = GObject.registerClass(
 
       this._applySettings();
       this._settingsChangedId = this.settings.connect('changed', this._applySettings.bind(this));
-      this.menu.connect('open-state-changed', this._onMenuOpened.bind(this));
+      this._menuOpenedId = this.menu.connect('open-state-changed', this._onMenuOpened.bind(this));
 
-      this.messageTray = new MessageTray.MessageTray();
-      this.notification_source = new MessageTray.Source({ title: _('Parasocial'), iconName: _('parasocial') });
-      this.notification_source.policy = new MessageTray.NotificationApplicationPolicy(_('parasocial'));
+      // The source belongs to the Shell's own tray; a second MessageTray instance
+      // would never be added to the stage, so its banners would be invisible.
+      // The policy id is deliberately untranslated: it becomes a GSettings path.
+      this.notification_source = new MessageTray.Source({ title: _('Parasocial'), iconName: 'parasocial' });
+      this.notification_source.policy = new MessageTray.NotificationApplicationPolicy('parasocial');
       this.notification_source.connect('destroy', () => { this.notification_source = null; });
-      this.messageTray.add(this.notification_source);
+      Main.messageTray.add(this.notification_source);
     }
 
     _applySettings() {
@@ -142,7 +144,15 @@ const ExtensionLayout = GObject.registerClass(
     destroy() {
       Object.values(this.timer).forEach(t => t && GLib.source_remove(t));
       this.timer = { view: 0, update: 0, settings: 0 };
+
       if (this._settingsChangedId) this.settings.disconnect(this._settingsChangedId);
+      this._settingsChangedId = 0;
+      if (this._menuOpenedId) this.menu.disconnect(this._menuOpenedId);
+      this._menuOpenedId = 0;
+
+      if (this.notification_source) this.notification_source.destroy();
+      this.notification_source = null;
+
       super.destroy();
     }
 

@@ -2,6 +2,7 @@ import St from 'gi://St';
 import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import * as Icons from './icons.js';
+import * as ShellIcons from './shell_icons.js';
 
 export const empty = () => ({
   box: new St.Label({ text: "", y_align: Clutter.ActorAlign.CENTER }),
@@ -51,7 +52,7 @@ export const all_icons = () => {
     box: new St.BoxLayout(),
     update(online) {
       actors.forEach(actor => actor.destroy());
-      actors = online.map(streamer => Icons.get_streamericon(streamer.fullId, "streamer-icon system-status-icon"));
+      actors = online.map(streamer => ShellIcons.get_streamericon(streamer.fullId, "streamer-icon system-status-icon"));
       actors.forEach(icon => this.box.add_child(icon));
     },
     interval: () => {}
